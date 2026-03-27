@@ -1,14 +1,33 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>冷凍ノート</title>
-  <style>
-    body { background: #ffffff; padding: 0.5rem 1rem; }
-  </style>
-</head>
-<body>
+====================================================
+【冷凍ノート】プロジェクト設定ガイド　v2.2
+====================================================
+
+■ プロジェクト「カスタム指示」に貼る文章
+---------------------------------------------------
+このプロジェクトでは「冷凍ノート」アプリを使用します。
+会話を開始したら毎回、下記の指示に従ってください。
+
+- ユーザーが「冷凍ノート」「起動」「開いて」などと入力したら、
+  プロジェクト知識にある【冷凍ノート_app_code】のHTMLコードを
+  show_widgetツールで表示してください。
+- 冷媒種別（R404A・R410A・R22・R134a・R407C・R32・R448A・R449A・R600a）に対応した
+  理論値比較・診断機能付きの冷凍サイクル記録アプリです。
+- ユーザーはホシザキ沖縄のサービス技術者です。
+---------------------------------------------------
+
+■ プロジェクト「知識」に追加するファイル名
+  → このファイルをそのままアップロードしてください。
+  　 ファイル名：冷凍ノート_プロジェクト用コード_v2.2.txt
+
+■ v2.2 修正内容
+  → 外気温・庫内温度・吐出温度・吸入温度フィールドの inputmode="decimal" を削除
+  　 iOS・Androidでマイナス値が入力できない問題を修正（type="text" + inputmode="numeric" に変更）
+
+====================================================
+【冷凍ノート_app_code】
+以下のHTMLコードをshow_widgetで表示すること。
+====================================================
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
@@ -249,5 +268,3 @@ function renderRecords(){const el=document.getElementById('records-list');if(rec
 updateRefInfo();
 loadRecords();
 </script>
-</body>
-</html>
