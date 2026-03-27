@@ -138,15 +138,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 
 <div class="app">
 
-<div id="gas-setting" style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;">
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <span style="font-size:14px;">📊</span>
-    <span style="font-weight:600;color:#1e40af;">スプレッドシート連携</span>
-    <input id="gas-url" type="text" placeholder="GAS ウェブアプリのURLを貼り付け"
-      style="flex:1;min-width:180px;height:34px;padding:0 10px;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;background:#fff;color:#111827;"/>
-    <button onclick="saveGasUrl()" style="height:34px;padding:0 14px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">保存</button>
-    <span id="gas-status" style="font-size:11px;color:#6b7280;"></span>
-  </div>
 </div>
 <div class="tabs">
   <button class="tab active" onclick="showTab('input')">📋 データ入力</button>
@@ -217,6 +208,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 </div>
 
 <div id="tab-records" style="display:none">
+  <div style="margin-bottom:12px;">
+    <button onclick="sendAllToSheet()" style="display:flex;align-items:center;gap:8px;background:#16a34a;color:#fff;border:none;border-radius:12px;height:46px;padding:0 20px;font-size:14px;font-weight:600;cursor:pointer;width:100%;justify-content:center;">
+      <span style="font-size:18px;">📊</span> スプレッドシートに送信
+    </button>
+    <div id="send-result" style="margin-top:8px;font-size:13px;text-align:center;color:#16a34a;font-weight:600;"></div>
+  </div>
   <div id="records-list"></div>
 </div>
 
@@ -310,43 +307,49 @@ function str(id){return document.getElementById(id).value.trim();}
 function saveRecord(){const site=str('site'),model=str('model'),type=str('type'),refrigerant=str('refrigerant');const hp=val('hp'),lp=val('lp'),td=val('td'),ts=val('ts');const amb=val('amb'),indoor=val('indoor'),amp=val('amp'),note=str('note');if(!site||!model||isNaN(hp)||isNaN(lp)||isNaN(td)||isNaN(ts)){alert('現場名・機種名・冷凍サイクルデータを入力してください');return;}const diag=diagnose(hp,lp,td,ts,amb,indoor,refrigerant);const record={id:Date.now(),date:new Date().toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',year:'numeric'}),site,model,type,refrigerant,hp,lp,td,ts,amb,indoor,amp,note,diag};records.unshift(record);saveToStorage();showTab('records');}
 function deleteRecord(id){records=records.filter(r=>r.id!==id);saveToStorage();renderRecords();}
 function typeLabel(t){return{ice:'製氷機',cooler:'冷蔵庫',freezer:'冷凍庫',ac:'エアコン',other:'冷凍機'}[t]||t;}
-function renderRecords(){const el=document.getElementById('records-list');if(records.length===0){el.innerHTML='<div class="empty">記録がありません。<br>「データ入力」から最初の診断を行いましょう。</div>';return;}el.innerHTML=records.map(r=>{const theory=r.diag.theory||getTheory(r.refrigerant||'R404A',r.amb,r.indoor);const sh=parseFloat(r.diag.superheat);const isR600a=r.refrigerant==='R600a';return`<div class="result-card"><div class="result-header"><div><span class="result-name">${r.site}</span><br><span style="font-size:11px;color:#9ca3af">${typeLabel(r.type)} / ${r.model}</span></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="badge ${isR600a?'purple':'info'}">${r.refrigerant||'—'}</span><span class="result-date">${r.date}</span><button class="delete-btn" onclick="deleteRecord(${r.id})">×</button><button onclick="sendToSheet(${r.id})" style="background:#1d4ed8;border:none;border-radius:8px;color:#fff;font-size:11px;font-weight:600;padding:4px 10px;cursor:pointer;min-height:34px;">📊 送信</button></div></div><div class="metric-row"><div class="metric"><div class="metric-label">圧縮比</div><div class="metric-value">${r.diag.pressRatio}</div></div><div class="metric"><div class="metric-label">過熱度</div><div class="metric-value">${r.diag.superheat}℃</div></div><div class="metric"><div class="metric-label">診断結果</div><div class="metric-value" style="font-size:14px"><span class="badge ${r.diag.status}">${r.diag.label}</span></div></div></div><div class="compare-grid"><div class="compare-header">項目</div><div class="compare-header">実測値</div><div class="compare-header">理論値（${r.refrigerant||'—'}）</div><div class="compare-header">判定</div><div class="compare-cell label">高圧 MPa</div><div class="compare-cell">${r.hp}</div><div class="compare-cell">${theory?theory.theoryHP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.hp-theory.theoryHP)<=0.15?'ok':theory&&r.hp-theory.theoryHP>0.15?'ng':'warn'}">${theory?Math.abs(r.hp-theory.theoryHP)<=0.15?'良好':r.hp-theory.theoryHP>0.15?'高め':'低め':'—'}</span></div><div class="compare-cell label">低圧 MPa</div><div class="compare-cell">${r.lp}</div><div class="compare-cell">${theory?theory.theoryLP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.lp-theory.theoryLP)<=0.08?'ok':theory&&r.lp-theory.theoryLP<-0.08?'ng':'warn'}">${theory?Math.abs(r.lp-theory.theoryLP)<=0.08?'良好':r.lp<theory.theoryLP?'低め':'高め':'—'}</span></div><div class="compare-cell label">吐出温度 ℃</div><div class="compare-cell">${r.td}</div><div class="compare-cell">60〜90</div><div class="compare-cell"><span class="badge ${r.td>100?'ng':r.td>90?'warn':'ok'}">${r.td>100?'高め':r.td>90?'要注意':'良好'}</span></div><div class="compare-cell label">過熱度 ℃</div><div class="compare-cell">${r.diag.superheat}</div><div class="compare-cell">5〜10</div><div class="compare-cell"><span class="badge ${sh<3?'ng':sh>15?'warn':'ok'}">${sh<3?'液バック注意':sh>15?'過大':'良好'}</span></div>${!isNaN(r.amp)?`<div class="compare-cell label">運転電流 A</div><div class="compare-cell">${r.amp}</div><div class="compare-cell">定格値参照</div><div class="compare-cell"><span class="badge ok">記録済</span></div>`:''}</div><div class="diag-box ${r.diag.status}">${r.diag.msg}</div>${r.note?`<div style="margin-top:8px;font-size:12px;color:#4b5563">📝 ${r.note}</div>`:''}</div>`;}).join('');}
+function renderRecords(){const el=document.getElementById('records-list');if(records.length===0){el.innerHTML='<div class="empty">記録がありません。<br>「データ入力」から最初の診断を行いましょう。</div>';return;}el.innerHTML=records.map(r=>{const theory=r.diag.theory||getTheory(r.refrigerant||'R404A',r.amb,r.indoor);const sh=parseFloat(r.diag.superheat);const isR600a=r.refrigerant==='R600a';return`<div class="result-card"><div class="result-header"><div><span class="result-name">${r.site}</span><br><span style="font-size:11px;color:#9ca3af">${typeLabel(r.type)} / ${r.model}</span></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="badge ${isR600a?'purple':'info'}">${r.refrigerant||'—'}</span><span class="result-date">${r.date}</span><button class="delete-btn" onclick="deleteRecord(${r.id})">×</button><input type="checkbox" class="rec-check" data-id="${r.id}" style="width:20px;height:20px;cursor:pointer;accent-color:#1d4ed8;flex-shrink:0;"/></div></div><div class="metric-row"><div class="metric"><div class="metric-label">圧縮比</div><div class="metric-value">${r.diag.pressRatio}</div></div><div class="metric"><div class="metric-label">過熱度</div><div class="metric-value">${r.diag.superheat}℃</div></div><div class="metric"><div class="metric-label">診断結果</div><div class="metric-value" style="font-size:14px"><span class="badge ${r.diag.status}">${r.diag.label}</span></div></div></div><div class="compare-grid"><div class="compare-header">項目</div><div class="compare-header">実測値</div><div class="compare-header">理論値（${r.refrigerant||'—'}）</div><div class="compare-header">判定</div><div class="compare-cell label">高圧 MPa</div><div class="compare-cell">${r.hp}</div><div class="compare-cell">${theory?theory.theoryHP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.hp-theory.theoryHP)<=0.15?'ok':theory&&r.hp-theory.theoryHP>0.15?'ng':'warn'}">${theory?Math.abs(r.hp-theory.theoryHP)<=0.15?'良好':r.hp-theory.theoryHP>0.15?'高め':'低め':'—'}</span></div><div class="compare-cell label">低圧 MPa</div><div class="compare-cell">${r.lp}</div><div class="compare-cell">${theory?theory.theoryLP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.lp-theory.theoryLP)<=0.08?'ok':theory&&r.lp-theory.theoryLP<-0.08?'ng':'warn'}">${theory?Math.abs(r.lp-theory.theoryLP)<=0.08?'良好':r.lp<theory.theoryLP?'低め':'高め':'—'}</span></div><div class="compare-cell label">吐出温度 ℃</div><div class="compare-cell">${r.td}</div><div class="compare-cell">60〜90</div><div class="compare-cell"><span class="badge ${r.td>100?'ng':r.td>90?'warn':'ok'}">${r.td>100?'高め':r.td>90?'要注意':'良好'}</span></div><div class="compare-cell label">過熱度 ℃</div><div class="compare-cell">${r.diag.superheat}</div><div class="compare-cell">5〜10</div><div class="compare-cell"><span class="badge ${sh<3?'ng':sh>15?'warn':'ok'}">${sh<3?'液バック注意':sh>15?'過大':'良好'}</span></div>${!isNaN(r.amp)?`<div class="compare-cell label">運転電流 A</div><div class="compare-cell">${r.amp}</div><div class="compare-cell">定格値参照</div><div class="compare-cell"><span class="badge ok">記録済</span></div>`:''}</div><div class="diag-box ${r.diag.status}">${r.diag.msg}</div>${r.note?`<div style="margin-top:8px;font-size:12px;color:#4b5563">📝 ${r.note}</div>`:''}</div>`;}).join('');}
 updateRefInfo();
 loadRecords();
 
 // ===== スプレッドシート連携 =====
+const GAS_URL='https://script.google.com/macros/s/AKfycbxgS3UTrtEQv4_BVIneWGdZt72iBgs3NqtJI7HoKdV1-JmeAD_gyVgmtHrQ0omjLBto/exec';
 function saveGasUrl(){
   const url=document.getElementById('gas-url').value.trim();
   if(!url){alert('URLを入力してください');return;}
-  localStorage.setItem('gas_url',url);
-  document.getElementById('gas-status').textContent='✅ 保存しました';
-  setTimeout(()=>document.getElementById('gas-status').textContent='',2000);
+  
+  
+  
 }
-function loadGasUrl(){
-  const url=localStorage.getItem('gas_url')||'';
-  if(url)document.getElementById('gas-url').value=url;
-}
-async function sendToSheet(id){
-  const url=localStorage.getItem('gas_url');
+
+async function sendAllToSheet(){
+  const url=GAS_URL;
   if(!url){alert('スプレッドシートのURLを先に設定してください');return;}
-  const r=records.find(r=>r.id===id);
-  if(!r)return;
-  const payload={
-    date:r.date, site:r.site, model:r.model,
-    type:typeLabel(r.type), refrigerant:r.refrigerant||'',
-    amb:r.amb, indoor:r.indoor,
-    hp:r.hp, lp:r.lp, td:r.td, ts:r.ts, amp:r.amp,
-    pressRatio:r.diag.pressRatio, superheat:r.diag.superheat,
-    diagLabel:r.diag.label, note:r.note||''
-  };
-  try{
-    const res=await fetch(url,{method:'POST',body:JSON.stringify(payload)});
-    const json=await res.json();
-    if(json.result==='success'){alert('✅ スプレッドシートに送信しました！');}
-    else{alert('送信エラー：'+json.message);}
-  }catch(e){alert('通信エラー：'+e.message);}
+  if(records.length===0){alert('送信する記録がありません');return;}
+  const btn=document.querySelector('[onclick="sendAllToSheet()"]');
+  btn.textContent='送信中...';btn.disabled=true;
+  let success=0,fail=0;
+  for(const r of records){
+    const payload={
+      date:r.date, site:r.site, model:r.model,
+      type:typeLabel(r.type), refrigerant:r.refrigerant||'',
+      amb:r.amb, indoor:r.indoor,
+      hp:r.hp, lp:r.lp, td:r.td, ts:r.ts, amp:r.amp,
+      pressRatio:r.diag.pressRatio, superheat:r.diag.superheat,
+      diagLabel:r.diag.label, note:r.note||''
+    };
+    try{
+      const res=await fetch(url,{method:'POST',body:JSON.stringify(payload)});
+      const json=await res.json();
+      if(json.result==='success')success++;else fail++;
+    }catch(e){fail++;}
+  }
+  btn.innerHTML='<span style="font-size:18px;">📊</span> スプレッドシートに送信';
+  btn.disabled=false;
+  const el=document.getElementById('send-result');
+  el.textContent=`✅ ${success}件送信成功${fail>0?' / '+fail+'件失敗':''}`;
+  setTimeout(()=>el.textContent='',4000);
 }
-loadGasUrl();
+
 
 </script>
 </body>
