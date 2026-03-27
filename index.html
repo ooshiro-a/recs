@@ -1,176 +1,121 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Rec's">
-<meta name="mobile-web-app-capable" content="yes">
-<title>Rec's — Service Record</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%231565C0'/><rect x='18' y='55' width='12' height='22' rx='2' fill='%2364B5F6'/><rect x='34' y='44' width='12' height='33' rx='2' fill='%2390CAF9'/><rect x='50' y='33' width='12' height='44' rx='2' fill='%23BBDEFB'/><rect x='66' y='38' width='12' height='39' rx='2' fill='%2390CAF9'/><line x1='14' y1='78' x2='82' y2='78' stroke='%23E3F2FD' stroke-width='1.5' opacity='0.6'/><polyline points='18,65 34,52 50,40 66,46 80,34' fill='none' stroke='%23FFF176' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/><rect x='72' y='18' width='6' height='26' rx='3' fill='%23E3F2FD'/><rect x='74.5' y='26' width='2' height='16' rx='1' fill='%23FF5252'/><circle cx='75' cy='46' r='5' fill='%23FF5252'/><circle cx='75' cy='46' r='3.5' fill='%23FF1744'/></svg>">
+====================================================
+【冷凍ノート】プロジェクト設定ガイド　v2.1
+====================================================
+
+■ プロジェクト「カスタム指示」に貼る文章
+---------------------------------------------------
+このプロジェクトでは「冷凍ノート」アプリを使用します。
+会話を開始したら毎回、下記の指示に従ってください。
+
+- ユーザーが「冷凍ノート」「起動」「開いて」などと入力したら、
+  プロジェクト知識にある【冷凍ノート_app_code】のHTMLコードを
+  show_widgetツールで表示してください。
+- 冷媒種別（R404A・R410A・R22・R134a・R407C・R32・R448A・R449A・R600a）に対応した
+  理論値比較・診断機能付きの冷凍サイクル記録アプリです。
+- ユーザーはホシザキ沖縄のサービス技術者です。
+---------------------------------------------------
+
+■ プロジェクト「知識」に追加するファイル名
+  → このファイルをそのままアップロードしてください。
+  　 ファイル名：冷凍ノート_プロジェクト用コード_v2.1.txt
+
+■ v2.1 修正内容
+  → 外気温・庫内温度・吐出温度・吸入温度フィールドの inputmode="decimal" を削除
+  　 iOSでマイナス値（例：-18℃）が入力できない問題を修正
+
+====================================================
+【冷凍ノート_app_code】
+以下のHTMLコードをshow_widgetで表示すること。
+====================================================
+
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#ffffff;--bg2:#f5f5f7;--border:#e0e0e0;
-  --text:#1a1a1a;--text2:#666;--text3:#999;
-  --blue:#1565C0;--blue-light:#1976D2;--blue-bg:#e8f0fe;--blue-pale:#E3F2FD;
-  --green:#1a7f37;--green-bg:#d4f0dc;
-  --red:#cf2222;--red-bg:#fde8e8;
-  --yellow:#7a5800;--yellow-bg:#fef9e7;
-  --purple:#7c3aed;--purple-bg:#f0e8ff;
-  --accent:#FF5252;
-}
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#1c1c1e;--bg2:#2c2c2e;--border:#3a3a3c;
-    --text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;
-    --blue:#409cff;--blue-light:#5aabff;--blue-bg:#1a2f4a;--blue-pale:#1a2f4a;
-    --green:#30d158;--green-bg:#0d2e18;
-    --red:#ff453a;--red-bg:#2e0f0d;
-    --yellow:#ffd60a;--yellow-bg:#2e2600;
-    --purple:#bf5af2;--purple-bg:#2a1a40;
-    --accent:#FF6B6B;
-  }
-}
-body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-
-/* ヘッダー */
-.header{position:sticky;top:0;background:var(--bg);border-bottom:0.5px solid var(--border);z-index:100;padding:0 16px}
-.header-inner{max-width:700px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:10px 0 0}
-.header-logo{width:36px;height:36px;flex-shrink:0}
-.header-titles{display:flex;flex-direction:column;gap:1px}
-.header-title{font-size:18px;font-weight:700;letter-spacing:0.02em;color:var(--text)}
-.header-sub{font-size:10px;color:var(--text3);letter-spacing:0.12em}
-
-/* タブ */
-.tabs{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;margin:0 -16px;padding:0 16px;max-width:calc(700px + 32px)}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.app{padding:0.75rem 0;max-width:700px;margin:0 auto}
+.tabs{display:flex;gap:0;border-bottom:0.5px solid var(--color-border-tertiary);margin-bottom:1.25rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{padding:10px 14px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap;min-height:44px;display:flex;align-items:center;font-weight:500;flex-shrink:0}
-.tab.active{color:var(--blue);border-bottom:2px solid var(--blue);font-weight:600}
-
-/* コンテンツ */
-.app{padding:0 16px 80px;max-width:700px;margin:0 auto}
-.section-title{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;margin-top:16px}
+.tab{padding:10px 14px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-0.5px;white-space:nowrap;min-height:44px;display:flex;align-items:center}
+.tab.active{color:var(--color-text-primary);border-bottom:2px solid var(--color-text-primary);font-weight:600}
+.section-title{font-size:10px;font-weight:600;color:var(--color-text-tertiary);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;margin-top:4px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
-@media(max-width:420px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grid3{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr 1fr}}
 .field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:11px;color:var(--text2);font-weight:500}
-.field input,.field select{height:44px;padding:0 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:15px;appearance:none;-webkit-appearance:none;width:100%}
+.field label{font-size:11px;color:var(--color-text-secondary);font-weight:500}
+.field input,.field select{height:44px;padding:0 12px;border:1px solid var(--color-border-tertiary);border-radius:10px;background:var(--color-background-primary);color:var(--color-text-primary);font-size:15px;appearance:none;-webkit-appearance:none}
 .field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23999' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-.field input:focus,.field select:focus{outline:none;border-color:var(--blue);border-width:1.5px}
-.unit{font-size:10px;color:var(--text3)}
-.btn-primary{width:100%;height:50px;background:var(--blue);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;letter-spacing:0.02em}
-.btn-primary:active{opacity:0.8;transform:scale(0.99)}
-
-/* カード */
-.result-card{border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;background:var(--bg)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--color-text-primary);border-width:1.5px}
+.unit{font-size:10px;color:var(--color-text-tertiary)}
+.btn-primary{width:100%;height:50px;background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px;letter-spacing:0.02em}
+.btn-primary:active{opacity:0.75;transform:scale(0.99)}
+.result-card{border:1px solid var(--color-border-tertiary);border-radius:14px;padding:1rem 1rem;margin-bottom:12px;background:var(--color-background-primary)}
 .result-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:8px}
 .result-name{font-size:15px;font-weight:600}
-.result-date{font-size:11px;color:var(--text3)}
+.result-date{font-size:11px;color:var(--color-text-tertiary)}
 .compare-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;font-size:11px}
-.compare-header{color:var(--text3);font-size:10px;padding-bottom:6px;border-bottom:0.5px solid var(--border);font-weight:500}
-.compare-cell{padding:5px 0;color:var(--text2);border-bottom:0.5px solid var(--border)}
-.compare-cell.label{color:var(--text);font-weight:500}
+.compare-header{color:var(--color-text-tertiary);font-size:10px;padding-bottom:6px;border-bottom:0.5px solid var(--color-border-tertiary);font-weight:500}
+.compare-cell{padding:5px 0;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.compare-cell.label{color:var(--color-text-primary);font-weight:500}
 .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:600}
-.badge.ok{background:var(--green-bg);color:var(--green)}
-.badge.warn{background:var(--yellow-bg);color:var(--yellow)}
-.badge.ng{background:var(--red-bg);color:var(--red)}
-.badge.info{background:var(--blue-bg);color:var(--blue)}
-.badge.purple{background:var(--purple-bg);color:var(--purple)}
+.badge.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.badge.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.badge.ng{background:var(--color-background-danger);color:var(--color-text-danger)}
+.badge.info{background:var(--color-background-info);color:var(--color-text-info)}
+.badge.purple{background:#f0e8ff;color:#7c3aed}
 .diag-box{border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px;line-height:1.6}
-.diag-box.ok{background:var(--green-bg);color:var(--green)}
-.diag-box.warn{background:var(--yellow-bg);color:var(--yellow)}
-.diag-box.ng{background:var(--red-bg);color:var(--red)}
+.diag-box.ok{background:var(--color-background-success);color:var(--color-text-success)}
+.diag-box.warn{background:var(--color-background-warning);color:var(--color-text-warning)}
+.diag-box.ng{background:var(--color-background-danger);color:var(--color-text-danger)}
 .metric-row{display:flex;gap:8px;margin-bottom:12px}
-.metric{background:var(--bg2);border-radius:10px;padding:10px 12px;flex:1;min-width:0}
-.metric-label{font-size:10px;color:var(--text2);margin-bottom:3px;font-weight:500}
+.metric{background:var(--color-background-secondary);border-radius:10px;padding:10px 12px;flex:1;min-width:0}
+.metric-label{font-size:10px;color:var(--color-text-secondary);margin-bottom:3px;font-weight:500}
 .metric-value{font-size:18px;font-weight:600}
-.empty{text-align:center;padding:3rem 1rem;color:var(--text3);font-size:14px;line-height:1.8}
-.delete-btn{background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:20px;padding:4px 8px;min-height:44px;min-width:44px;display:flex;align-items:center;justify-content:center}
-
-/* テーブル */
+.empty{text-align:center;padding:2rem 1rem;color:var(--color-text-tertiary);font-size:14px;line-height:1.7}
+.delete-btn{background:transparent;border:none;cursor:pointer;color:var(--color-text-tertiary);font-size:18px;padding:4px 8px;min-height:44px;display:flex;align-items:center}
+.delete-btn:hover{color:var(--color-text-danger)}
 .ref-table{width:100%;font-size:11px;border-collapse:collapse;margin-top:8px}
-.ref-table th{text-align:left;color:var(--text3);font-weight:600;padding:6px;border-bottom:0.5px solid var(--border);font-size:10px}
-.ref-table td{padding:6px;border-bottom:0.5px solid var(--border);color:var(--text2)}
+.ref-table th{text-align:left;color:var(--color-text-tertiary);font-weight:600;padding:5px 6px;border-bottom:0.5px solid var(--color-border-tertiary);font-size:10px}
+.ref-table td{padding:5px 6px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-secondary)}
 .ref-table tr:last-child td{border-bottom:none}
-.ref-section{border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
-.ref-section-title{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--text)}
-
-/* スケール */
-.scale-card{border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;background:var(--bg)}
+.ref-section{border:1px solid var(--color-border-tertiary);border-radius:14px;padding:1rem 1rem;margin-bottom:12px}
+.ref-section-title{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--color-text-primary)}
+.scale-card{border:1px solid var(--color-border-tertiary);border-radius:14px;padding:1rem;margin-bottom:12px;background:var(--color-background-primary)}
+.scale-title{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--color-text-primary);display:flex;align-items:center;gap:8px}
 .scale-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.scale-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-weight:500;min-height:36px}
-.scale-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.scale-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
-.scale-item{background:var(--bg2);border-radius:10px;padding:8px 10px;text-align:center}
-.scale-temp{font-size:11px;color:var(--text3);margin-bottom:2px;font-weight:500}
-.scale-press{font-size:16px;font-weight:700;color:var(--text)}
-.scale-unit{font-size:10px;color:var(--text2)}
-.scale-highlight{background:var(--blue-bg);border-radius:10px;padding:8px 10px;text-align:center}
-.scale-highlight .scale-temp,.scale-highlight .scale-press{color:var(--blue)}
-.conv-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:12px;flex-wrap:wrap}
+.scale-btn{padding:7px 14px;border-radius:20px;border:1px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);font-size:12px;cursor:pointer;font-weight:500;min-height:36px}
+.scale-btn.active{background:var(--color-text-primary);color:var(--color-background-primary);border-color:var(--color-text-primary)}
+.scale-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.scale-item{background:var(--color-background-secondary);border-radius:10px;padding:8px 10px;text-align:center}
+.scale-temp{font-size:11px;color:var(--color-text-tertiary);margin-bottom:2px;font-weight:500}
+.scale-press{font-size:16px;font-weight:700;color:var(--color-text-primary)}
+.scale-unit{font-size:10px;color:var(--color-text-secondary)}
+.scale-highlight{background:var(--color-background-info);border-radius:10px;padding:8px 10px;text-align:center}
+.scale-highlight .scale-temp{color:var(--color-text-info)}
+.scale-highlight .scale-press{color:var(--color-text-info)}
+.conv-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap}
 .conv-input{flex:1;min-width:120px}
-.conv-result{background:var(--bg2);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--text2);min-width:160px;flex:1}
-.conv-result strong{color:var(--text);font-size:15px}
+.conv-result{background:var(--color-background-secondary);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--color-text-secondary);min-width:160px}
+.conv-result strong{color:var(--color-text-primary);font-size:15px}
 .theory-preview{margin-bottom:14px;display:none}
-.theory-box{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2);line-height:2;background:var(--bg2)}
-.ref-info-box{min-height:44px;display:flex;align-items:center;font-size:11px;color:var(--text2);line-height:1.5;padding:4px 0;flex-wrap:wrap}
-.tab-content{display:none;padding-top:4px}
-.tab-content.active{display:block}
-.btn-sheet{width:100%;height:50px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;letter-spacing:0.02em;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn-sheet:active{opacity:0.8;transform:scale(0.99)}
-.btn-sheet:disabled{opacity:0.5;cursor:not-allowed}
-.sheet-status{font-size:12px;color:var(--text3);text-align:center;margin-top:6px;min-height:18px}
+.theory-box{border:1px solid var(--color-border-tertiary);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--color-text-secondary);line-height:2;background:var(--color-background-secondary)}
+.ref-info-box{height:auto;min-height:36px;display:flex;align-items:center;font-size:11px;color:var(--color-text-secondary);padding:4px;line-height:1.4;flex-wrap:wrap}
 </style>
-</head>
-<body>
-
-<div class="header">
-  <div class="header-inner">
-    <!-- SVGロゴ -->
-    <svg class="header-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="50" fill="#1565C0"/>
-      <!-- 棒グラフ -->
-      <rect x="14" y="56" width="12" height="22" rx="2" fill="#64B5F6" opacity="0.9"/>
-      <rect x="30" y="44" width="12" height="34" rx="2" fill="#90CAF9" opacity="0.9"/>
-      <rect x="46" y="32" width="12" height="46" rx="2" fill="#BBDEFB" opacity="0.95"/>
-      <rect x="62" y="38" width="12" height="40" rx="2" fill="#90CAF9" opacity="0.9"/>
-      <!-- ベースライン -->
-      <line x1="10" y1="80" x2="82" y2="80" stroke="#E3F2FD" stroke-width="1.5" opacity="0.5"/>
-      <!-- トレンドライン -->
-      <polyline points="14,66 30,54 46,40 62,46 76,34" fill="none" stroke="#FFF176" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
-      <circle cx="76" cy="34" r="3" fill="#FFEE58"/>
-      <!-- 温度計（右上・小さめ） -->
-      <rect x="72" y="10" width="7" height="28" rx="3.5" fill="#E3F2FD"/>
-      <rect x="74.5" y="18" width="2" height="18" rx="1" fill="#FF5252"/>
-      <circle cx="75.5" cy="38" r="6" fill="#FF5252"/>
-      <circle cx="75.5" cy="38" r="4" fill="#FF1744"/>
-    </svg>
-    <div class="header-titles">
-      <div class="header-title">Rec's</div>
-      <div class="header-sub">Service Record</div>
-    </div>
-  </div>
-  <div class="tabs" role="tablist">
-    <button class="tab active" onclick="showTab('input')">📋 データ入力</button>
-    <button class="tab" onclick="showTab('records')">🗂 記録一覧</button>
-    <button class="tab" onclick="showTab('scale')">🌡 冷媒スケール</button>
-    <button class="tab" onclick="showTab('reference')">📖 特性表</button>
-  </div>
-</div>
 
 <div class="app">
+<div class="tabs">
+  <button class="tab active" onclick="showTab('input')">📋 データ入力</button>
+  <button class="tab" onclick="showTab('records')">🗂 記録一覧</button>
+  <button class="tab" onclick="showTab('scale')">🌡 冷媒スケール</button>
+  <button class="tab" onclick="showTab('reference')">📖 特性表</button>
+</div>
 
-<!-- データ入力 -->
-<div id="tab-input" class="tab-content active">
+<div id="tab-input">
   <div class="section-title">基本情報</div>
   <div class="grid2">
     <div class="field"><label>現場名</label><input id="site" placeholder="例：山田食堂" autocomplete="off"/></div>
     <div class="field"><label>機種名</label><input id="model" placeholder="例：IM-45M-1" autocomplete="off"/></div>
   </div>
-  <div class="grid2">
+  <div class="grid3">
     <div class="field">
       <label>機器種別</label>
       <select id="type">
@@ -181,11 +126,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',san
         <option value="other">その他冷凍機</option>
       </select>
     </div>
-    <div class="field"><label>外気温 <span class="unit">℃</span></label><input id="amb" type="number" step="0.1" placeholder="32.0" inputmode="decimal"/></div>
-  </div>
-  <div class="grid2">
-    <div class="field"><label>庫内温度 <span class="unit">℃</span></label><input id="indoor" type="number" step="0.1" placeholder="-5.0" inputmode="decimal"/></div>
-    <div class="field"><label>設定温度 <span class="unit">℃</span></label><input id="settemp" type="number" step="0.1" placeholder="-5.0" inputmode="decimal"/></div>
+    <div class="field"><label>外気温 <span class="unit">℃</span></label><input id="amb" type="number" step="0.1" placeholder="32.0"/></div>
+    <div class="field"><label>庫内温度 <span class="unit">℃</span></label><input id="indoor" type="number" step="0.1" placeholder="-5.0"/></div>
   </div>
   <div class="section-title">冷媒種別</div>
   <div class="grid2">
@@ -214,8 +156,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',san
     <div class="field"><label>吸入圧力（低圧） <span class="unit">MPa</span></label><input id="lp" type="number" step="0.01" placeholder="0.30" inputmode="decimal"/></div>
   </div>
   <div class="grid2">
-    <div class="field"><label>吐出温度 <span class="unit">℃</span></label><input id="td" type="number" step="0.1" placeholder="80.0" inputmode="decimal"/></div>
-    <div class="field"><label>吸込温度 <span class="unit">℃</span></label><input id="ts" type="number" step="0.1" placeholder="-5.0" inputmode="decimal"/></div>
+    <div class="field"><label>吐出温度 <span class="unit">℃</span></label><input id="td" type="number" step="0.1" placeholder="80.0"/></div>
+    <div class="field"><label>吸入温度 <span class="unit">℃</span></label><input id="ts" type="number" step="0.1" placeholder="5.0"/></div>
   </div>
   <div class="grid2">
     <div class="field"><label>運転電流 <span class="unit">A</span></label><input id="amp" type="number" step="0.1" placeholder="3.5" inputmode="decimal"/></div>
@@ -228,36 +170,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',san
   <button class="btn-primary" onclick="saveRecord()">診断して記録する →</button>
 </div>
 
-<!-- 記録一覧 -->
-<div id="tab-records" class="tab-content">
-  <button class="btn-sheet" id="sheet-btn" onclick="sendToSheet()">📊 スプレッドシートに送信</button>
-  <div class="sheet-status" id="sheet-status"></div>
+<div id="tab-records" style="display:none">
   <div id="records-list"></div>
 </div>
 
-<!-- 冷媒スケール -->
-<div id="tab-scale" class="tab-content">
+<div id="tab-scale" style="display:none">
   <div class="scale-card">
-    <div style="font-size:13px;font-weight:600;margin-bottom:12px">🌡 冷媒スケール（飽和圧力・温度対応表）</div>
+    <div class="scale-title">🌡 冷媒スケール（飽和圧力・温度対応表）</div>
     <div class="scale-selector" id="scale-btns"></div>
-    <div class="section-title" style="margin-top:0">圧力 → 飽和温度 換算</div>
+    <div class="section-title" style="margin-top:4px">圧力 → 飽和温度 換算</div>
     <div class="conv-row">
       <div class="conv-input field">
         <label>圧力 <span class="unit">MPa</span></label>
         <input id="conv-press" type="number" step="0.01" placeholder="0.63" inputmode="decimal" oninput="convertPress()"/>
       </div>
-      <div class="conv-result" id="conv-result">圧力を入力すると<br>飽和温度を表示します</div>
+      <div class="conv-result" id="conv-result">圧力を入力すると飽和温度を表示します</div>
     </div>
     <div class="section-title">飽和温度 → 圧力 一覧</div>
     <div class="scale-grid" id="scale-grid"></div>
   </div>
 </div>
 
-<!-- 特性表 -->
-<div id="tab-reference" class="tab-content">
+<div id="tab-reference" style="display:none">
   <div class="ref-section">
     <div class="ref-section-title">冷媒種別 飽和圧力早見表</div>
-    <p style="font-size:11px;color:var(--text2);margin-bottom:10px">蒸発温度（低圧側）・凝縮温度（高圧側）に対応する飽和圧力の目安値（MPa abs）</p>
+    <p style="font-size:11px;color:var(--color-text-secondary);margin-bottom:10px">蒸発温度（低圧側）・凝縮温度（高圧側）に対応する飽和圧力の目安値（MPa abs）</p>
     <div style="overflow-x:auto">
     <table class="ref-table">
       <tr><th>冷媒</th><th>蒸発-10℃</th><th>蒸発-5℃</th><th>蒸発0℃</th><th>凝縮40℃</th><th>凝縮50℃</th><th>凝縮55℃</th></tr>
@@ -291,12 +228,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Segoe UI',san
     </div>
   </div>
 </div>
-
 </div>
 
 <script>
 const STORAGE_KEY='reito_note_v3';
-const GAS_URL='https://script.google.com/macros/s/AKfycbxUDu6tG2MZe0b1UtxzzD0BF2IpfMSZe0nE7DVgg0CgCnWKmcW2x9QCwUkZsv-GKbiWog/exec';
 let records=[];
 const REFRIGERANTS={
   R404A:{name:'R404A',info:'低温冷凍・製氷機に多用。高GWP冷媒（代替移行中）。',evap:{'-25':0.28,'-20':0.34,'-15':0.44,'-10':0.53,'-5':0.63,'0':0.73,'5':0.85,'10':0.98},cond:{'30':1.49,'35':1.65,'40':1.83,'45':2.01,'50':2.19,'55':2.39,'60':2.60},normalHP:[1.6,2.2],normalLP:[0.40,0.75],maxDischarge:90},
@@ -309,56 +244,27 @@ const REFRIGERANTS={
   R449A:{name:'R449A',info:'R404A代替・広く普及している代替冷媒。',evap:{'-25':0.29,'-20':0.35,'-15':0.44,'-10':0.54,'-5':0.64,'0':0.75,'5':0.88,'10':1.02},cond:{'30':1.52,'35':1.68,'40':1.86,'45':2.04,'50':2.23,'55':2.43,'60':2.64},normalHP:[1.62,2.22],normalLP:[0.41,0.77],maxDischarge:90},
   R600a:{name:'R600a',info:'イソブタン・自然冷媒。超低GWP（3）。小型冷蔵庫・自販機用。可燃性大（A3）。',evap:{'-25':0.07,'-20':0.09,'-15':0.13,'-10':0.13,'-5':0.16,'0':0.19,'5':0.23,'10':0.28},cond:{'30':0.40,'35':0.47,'40':0.53,'45':0.60,'50':0.69,'55':0.77,'60':0.87},normalHP:[0.40,0.70],normalLP:[0.08,0.20],maxDischarge:85}
 };
-function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let bestEvap=null,minEvapDiff=999;evapKeys.forEach(t=>{const p=ref.evap[String(t)];const d=Math.abs(p-press);if(d<minEvapDiff){minEvapDiff=d;bestEvap={temp:t,press:p};}});let bestCond=null,minCondDiff=999;condKeys.forEach(t=>{const p=ref.cond[String(t)];const d=Math.abs(p-press);if(d<minCondDiff){minCondDiff=d;bestCond={temp:t,press:p};}});let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){evapInterp=(t1+(press-p1)/(p2-p1)*(t2-t1)).toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){condInterp=(t1+(press-p1)/(p2-p1)*(t2-t1)).toFixed(1);break;}}return{evapInterp,condInterp,bestEvap,bestCond};}
+function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let bestEvap=null,minEvapDiff=999;evapKeys.forEach(t=>{const p=ref.evap[String(t)];const d=Math.abs(p-press);if(d<minEvapDiff){minEvapDiff=d;bestEvap={temp:t,press:p};}});let bestCond=null,minCondDiff=999;condKeys.forEach(t=>{const p=ref.cond[String(t)];const d=Math.abs(p-press);if(d<minCondDiff){minCondDiff=d;bestCond={temp:t,press:p};}});let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp,bestEvap,bestCond,minEvapDiff,minCondDiff};}
 let currentScaleRef='R404A';
-function renderScaleBtns(){document.getElementById('scale-btns').innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}
-function selectScale(r){currentScaleRef=r;renderScaleBtns();renderScaleGrid();convertPress();}
-function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let h=`<div style="grid-column:1/-1;font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">▼ 蒸発側（低圧）</div>`;h+=evapRows.map(([t,p])=>`<div class="scale-item"><div class="scale-temp">${t}℃</div><div class="scale-press">${p}</div><div class="scale-unit">MPa</div></div>`).join('');h+=`<div style="grid-column:1/-1;font-size:10px;font-weight:600;color:var(--text3);margin:8px 0 2px">▲ 凝縮側（高圧）</div>`;h+=condRows.map(([t,p])=>`<div class="scale-highlight"><div class="scale-temp">${t}℃</div><div class="scale-press">${p}</div><div class="scale-unit">MPa</div></div>`).join('');el.innerHTML=h;}
-function convertPress(){const press=parseFloat(document.getElementById('conv-press').value);const el=document.getElementById('conv-result');if(isNaN(press)||press<=0){el.innerHTML='圧力を入力すると<br>飽和温度を表示します';return;}const r=pressToTemp(currentScaleRef,press);if(!r){el.innerHTML='—';return;}let h='';if(r.evapInterp!==null)h+=`蒸発温度：<strong>${r.evapInterp}℃</strong>（低圧側）<br>`;else h+=`蒸発最近傍：<strong>${r.bestEvap.temp}℃</strong>（${r.bestEvap.press}MPa）<br>`;if(r.condInterp!==null)h+=`凝縮温度：<strong>${r.condInterp}℃</strong>（高圧側）`;else h+=`凝縮最近傍：<strong>${r.bestCond.temp}℃</strong>（${r.bestCond.press}MPa）`;el.innerHTML=h;}
+function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}
+function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();convertPress();}
+function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:600;color:var(--color-text-tertiary);letter-spacing:0.08em;margin-bottom:2px">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item"><div class="scale-temp">${t}℃</div><div class="scale-press">${p}</div><div class="scale-unit">MPa</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:600;color:var(--color-text-tertiary);letter-spacing:0.08em;margin:8px 0 2px">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-highlight"><div class="scale-temp">${t}℃</div><div class="scale-press">${p}</div><div class="scale-unit">MPa</div></div>`).join('');el.innerHTML=html;}
+function convertPress(){const press=parseFloat(document.getElementById('conv-press').value);const el=document.getElementById('conv-result');if(isNaN(press)||press<=0){el.innerHTML='圧力を入力すると飽和温度を表示します';return;}const r=pressToTemp(currentScaleRef,press);if(!r){el.innerHTML='—';return;}let html='';if(r.evapInterp!==null)html+=`蒸発温度：<strong>${r.evapInterp}℃</strong>（低圧側）<br>`;else html+=`蒸発最近傍：<strong>${r.bestEvap.temp}℃</strong>（${r.bestEvap.press}MPa）<br>`;if(r.condInterp!==null)html+=`凝縮温度：<strong>${r.condInterp}℃</strong>（高圧側）`;else html+=`凝縮最近傍：<strong>${r.bestCond.temp}℃</strong>（${r.bestCond.press}MPa）`;el.innerHTML=html;}
 function getClosestSatP(table,temp){const keys=Object.keys(table).map(Number).sort((a,b)=>a-b);let best=keys[0];keys.forEach(k=>{if(Math.abs(k-temp)<Math.abs(best-temp))best=k;});return table[String(best)];}
-function getTheory(refKey,amb,indoor){const ref=REFRIGERANTS[refKey];if(!ref)return null;const condTemp=(amb||32)+12,evapTemp=(indoor||0)-8;return{theoryHP:getClosestSatP(ref.cond,condTemp),theoryLP:getClosestSatP(ref.evap,evapTemp),condTemp:condTemp.toFixed(0),evapTemp:evapTemp.toFixed(0)};}
+function getTheory(refKey,amb,indoor){const ref=REFRIGERANTS[refKey];if(!ref)return null;const condTemp=(amb||32)+12;const evapTemp=(indoor||0)-8;const theoryHP=getClosestSatP(ref.cond,condTemp);const theoryLP=getClosestSatP(ref.evap,evapTemp);return{theoryHP,theoryLP,condTemp:condTemp.toFixed(0),evapTemp:evapTemp.toFixed(0)};}
 function updateRefInfo(){const ref=REFRIGERANTS[document.getElementById('refrigerant').value];if(ref)document.getElementById('ref-info').textContent=ref.info;updateTheoryPreview();}
-function updateTheoryPreview(){const amb=parseFloat(document.getElementById('amb').value),indoor=parseFloat(document.getElementById('indoor').value);if(!isNaN(amb)&&!isNaN(indoor)){const t=getTheory(document.getElementById('refrigerant').value,amb,indoor);if(t){document.getElementById('theory-preview').style.display='';document.getElementById('theory-preview-content').innerHTML=`凝縮温度目安：<strong>${t.condTemp}℃</strong>　→　理論高圧：<strong>${t.theoryHP} MPa</strong><br>蒸発温度目安：<strong>${t.evapTemp}℃</strong>　→　理論低圧：<strong>${t.theoryLP} MPa</strong>`;}}}
-['amb','indoor'].forEach(id=>document.getElementById(id).addEventListener('input',updateTheoryPreview));
-function diagnose(hp,lp,td,ts,amb,indoor,refKey){const ref=REFRIGERANTS[refKey];const theory=getTheory(refKey,amb,indoor);let issues=[],status='ok';const pressRatio=hp/lp,superheat=ts-(isNaN(indoor)?0:indoor);if(theory){const hd=hp-theory.theoryHP,ld=lp-theory.theoryLP;if(hd>0.3){issues.push(`高圧が理論値より${hd.toFixed(2)}MPa高い：凝縮器汚れ・風量不足の可能性`);status='ng';}else if(hd>0.15){issues.push(`高圧が理論値よりやや高め（+${hd.toFixed(2)}MPa）：凝縮器の状態を確認`);if(status!=='ng')status='warn';}else if(hd<-0.25){issues.push(`高圧が理論値より${Math.abs(hd).toFixed(2)}MPa低い：冷媒不足の可能性`);if(status!=='ng')status='warn';}if(ld<-0.12){issues.push(`低圧が理論値より${Math.abs(ld).toFixed(2)}MPa低い：冷媒不足・膨張弁閉塞の可能性`);status='ng';}else if(ld<-0.06){issues.push(`低圧がやや低め（${ld.toFixed(2)}MPa）：蒸発器・膨張弁の確認推奨`);if(status!=='ng')status='warn';}}if(pressRatio>7){issues.push('圧縮比が高すぎる（7超）：コンプレッサー負荷大');status='ng';}else if(pressRatio>5.5){issues.push('圧縮比がやや高い（5.5〜7）：運転状態に注意');if(status!=='ng')status='warn';}if(td>ref.maxDischarge+10){issues.push(`吐出温度が高い（${td}℃）：過熱・冷媒不足の可能性`);status='ng';}else if(td>ref.maxDischarge){issues.push(`吐出温度が高め（${td}℃）：基準値${ref.maxDischarge}℃を超過`);if(status!=='ng')status='warn';}if(superheat<3){issues.push('過熱度不足（3℃未満）：液バック注意');status='ng';}else if(superheat>15){issues.push('過熱度過大（15℃超）：冷媒不足・膨張弁開度不足の可能性');if(status!=='ng')status='warn';}return{status,label:status==='ok'?'正常':status==='warn'?'要注意':'要点検',msg:issues.length===0?'各データ正常範囲内。冷凍サイクル良好です。':issues.join('　/　'),pressRatio:pressRatio.toFixed(2),superheat:superheat.toFixed(1),theory};}
-function loadRecords(){try{const d=localStorage.getItem(STORAGE_KEY);if(d)records=JSON.parse(d);}catch(e){records=[];}renderRecords();}
-function saveToStorage(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(records));}catch(e){}}
-async function sendToSheet(){
-  if(records.length===0){alert('送信する記録がありません');return;}
-  const btn=document.getElementById('sheet-btn');
-  const status=document.getElementById('sheet-status');
-  btn.disabled=true;
-  btn.textContent='📊 送信中...';
-  status.textContent='';
-  let success=0,fail=0;
-  for(const r of records){
-    try{
-      const payload={
-        date:r.date,site:r.site,model:r.model,type:r.type,refrigerant:r.refrigerant,
-        amb:isNaN(r.amb)?'':r.amb,indoor:isNaN(r.indoor)?'':r.indoor,settemp:isNaN(r.settemp)?'':r.settemp,
-        hp:isNaN(r.hp)?'':r.hp,lp:isNaN(r.lp)?'':r.lp,td:isNaN(r.td)?'':r.td,ts:isNaN(r.ts)?'':r.ts,amp:isNaN(r.amp)?'':r.amp,
-        pressRatio:r.diag.pressRatio,superheat:r.diag.superheat,label:r.diag.label,msg:r.diag.msg,
-        note:r.note||'',isPartial:r.isPartial||false
-      };
-      const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload)});
-      const json=await res.json();
-      if(json.result==='success')success++;else fail++;
-    }catch(e){fail++;}
-  }
-  btn.disabled=false;
-  btn.textContent='📊 スプレッドシートに送信';
-  if(fail===0){status.textContent=`✅ ${success}件の記録を送信しました！`;}
-  else{status.textContent=`⚠️ ${success}件成功 / ${fail}件失敗`;}
-}
-function showTab(name){document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['input','records','scale','reference'][i]===name));document.getElementById('tab-'+name).classList.add('active');if(name==='records')renderRecords();if(name==='scale'){renderScaleBtns();renderScaleGrid();}}
+function updateTheoryPreview(){const refKey=document.getElementById('refrigerant').value;const amb=parseFloat(document.getElementById('amb').value);const indoor=parseFloat(document.getElementById('indoor').value);if(!isNaN(amb)&&!isNaN(indoor)){const t=getTheory(refKey,amb,indoor);if(t){document.getElementById('theory-preview').style.display='';document.getElementById('theory-preview-content').innerHTML=`凝縮温度目安：<strong>${t.condTemp}℃</strong>　→　理論高圧：<strong>${t.theoryHP} MPa</strong><br>蒸発温度目安：<strong>${t.evapTemp}℃</strong>　→　理論低圧：<strong>${t.theoryLP} MPa</strong>`;}}}
+['amb','indoor'].forEach(id=>{document.getElementById(id).addEventListener('input',updateTheoryPreview);});
+function diagnose(hp,lp,td,ts,amb,indoor,refKey){const ref=REFRIGERANTS[refKey];const theory=getTheory(refKey,amb,indoor);let issues=[];let status='ok';const pressRatio=hp/lp;const superheat=ts-(isNaN(indoor)?0:indoor);if(theory){const hpDiff=hp-theory.theoryHP;const lpDiff=lp-theory.theoryLP;if(hpDiff>0.3){issues.push(`高圧が理論値より${hpDiff.toFixed(2)}MPa高い：凝縮器汚れ・風量不足の可能性`);status='ng';}else if(hpDiff>0.15){issues.push(`高圧が理論値よりやや高め（+${hpDiff.toFixed(2)}MPa）：凝縮器の状態を確認`);if(status!=='ng')status='warn';}else if(hpDiff<-0.25){issues.push(`高圧が理論値より${Math.abs(hpDiff).toFixed(2)}MPa低い：冷媒不足の可能性`);if(status!=='ng')status='warn';}if(lpDiff<-0.12){issues.push(`低圧が理論値より${Math.abs(lpDiff).toFixed(2)}MPa低い：冷媒不足・膨張弁閉塞の可能性`);status='ng';}else if(lpDiff<-0.06){issues.push(`低圧がやや低め（${lpDiff.toFixed(2)}MPa）：蒸発器・膨張弁の確認推奨`);if(status!=='ng')status='warn';}}if(pressRatio>7){issues.push('圧縮比が高すぎる（7超）：コンプレッサー負荷大');status='ng';}else if(pressRatio>5.5){issues.push('圧縮比がやや高い（5.5〜7）：運転状態に注意');if(status!=='ng')status='warn';}if(td>ref.maxDischarge+10){issues.push(`吐出温度が高い（${td}℃）：過熱・冷媒不足の可能性`);status='ng';}else if(td>ref.maxDischarge){issues.push(`吐出温度が高め（${td}℃）：基準値${ref.maxDischarge}℃を超過`);if(status!=='ng')status='warn';}if(superheat<3){issues.push('過熱度不足（3℃未満）：液バック注意');status='ng';}else if(superheat>15){issues.push('過熱度過大（15℃超）：冷媒不足・膨張弁開度不足の可能性');if(status!=='ng')status='warn';}const label=status==='ok'?'正常':status==='warn'?'要注意':'要点検';const msg=issues.length===0?'各データ正常範囲内。冷凍サイクル良好です。':issues.join('　/　');return{status,label,msg,pressRatio:pressRatio.toFixed(2),superheat:superheat.toFixed(1),theory};}
+async function loadRecords(){try{const r=await window.storage.get(STORAGE_KEY);if(r)records=JSON.parse(r.value);}catch(e){records=[];}renderRecords();}
+async function saveToStorage(){try{await window.storage.set(STORAGE_KEY,JSON.stringify(records));}catch(e){}}
+function showTab(name){['input','records','scale','reference'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',['input','records','scale','reference'][i]===name);});if(name==='records')renderRecords();if(name==='scale'){renderScaleBtns();renderScaleGrid();}}
 function val(id){return parseFloat(document.getElementById(id).value);}
 function str(id){return document.getElementById(id).value.trim();}
-function saveRecord(){const site=str('site'),model=str('model'),type=str('type'),refrigerant=str('refrigerant');const hp=val('hp'),lp=val('lp'),td=val('td'),ts=val('ts');const amb=val('amb'),indoor=val('indoor'),settemp=val('settemp'),amp=val('amp'),note=str('note');if(!site){alert('現場名を入力してください');return;}const isPartial=isNaN(hp)||isNaN(lp)||isNaN(td)||isNaN(ts);const diag=!isPartial?diagnose(hp,lp,td,ts,amb,indoor,refrigerant):{status:'warn',label:'参考',msg:'空白項目あり',pressRatio:'—',superheat:'—',theory:null};records.unshift({id:Date.now(),date:new Date().toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',year:'numeric'}),site,model,type,refrigerant,hp,lp,td,ts,amb,indoor,settemp,amp,note,diag,isPartial});saveToStorage();showTab('records');}
-function deleteRecord(id){if(!confirm('この記録を削除しますか？'))return;records=records.filter(r=>r.id!==id);saveToStorage();renderRecords();}
+function saveRecord(){const site=str('site'),model=str('model'),type=str('type'),refrigerant=str('refrigerant');const hp=val('hp'),lp=val('lp'),td=val('td'),ts=val('ts');const amb=val('amb'),indoor=val('indoor'),amp=val('amp'),note=str('note');if(!site||!model||isNaN(hp)||isNaN(lp)||isNaN(td)||isNaN(ts)){alert('現場名・機種名・冷凍サイクルデータを入力してください');return;}const diag=diagnose(hp,lp,td,ts,amb,indoor,refrigerant);const record={id:Date.now(),date:new Date().toLocaleDateString('ja-JP',{month:'2-digit',day:'2-digit',year:'numeric'}),site,model,type,refrigerant,hp,lp,td,ts,amb,indoor,amp,note,diag};records.unshift(record);saveToStorage();showTab('records');}
+function deleteRecord(id){records=records.filter(r=>r.id!==id);saveToStorage();renderRecords();}
 function typeLabel(t){return{ice:'製氷機',cooler:'冷蔵庫',freezer:'冷凍庫',ac:'エアコン',other:'冷凍機'}[t]||t;}
-function renderRecords(){const el=document.getElementById('records-list');if(records.length===0){el.innerHTML='<div class="empty">記録がありません。<br>「データ入力」から<br>最初の診断を行いましょう。</div>';return;}el.innerHTML=records.map(r=>{const theory=r.diag.theory||getTheory(r.refrigerant||'R404A',r.amb,r.indoor);const sh=parseFloat(r.diag.superheat),isR600a=r.refrigerant==='R600a';return`<div class="result-card"><div class="result-header"><div><span class="result-name">${r.site}</span><br><span style="font-size:11px;color:var(--text3)">${typeLabel(r.type)} / ${r.model}</span></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="badge ${isR600a?'purple':'info'}">${r.refrigerant||'—'}</span><span class="result-date">${r.date}</span><button class="delete-btn" onclick="deleteRecord(${r.id})">×</button></div></div><div class="metric-row"><div class="metric"><div class="metric-label">圧縮比</div><div class="metric-value">${r.diag.pressRatio}</div></div><div class="metric"><div class="metric-label">過熱度</div><div class="metric-value">${r.diag.superheat!=='—'?r.diag.superheat+'℃':'—'}</div></div><div class="metric"><div class="metric-label">診断結果</div><div class="metric-value" style="font-size:14px"><span class="badge ${r.diag.status}">${r.diag.label}</span></div></div></div><div class="compare-grid"><div class="compare-header">項目</div><div class="compare-header">実測値</div><div class="compare-header">理論値</div><div class="compare-header">判定</div><div class="compare-cell label">高圧 MPa</div><div class="compare-cell">${r.hp}</div><div class="compare-cell">${theory?theory.theoryHP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.hp-theory.theoryHP)<=0.15?'ok':theory&&r.hp-theory.theoryHP>0.15?'ng':'warn'}">${theory?Math.abs(r.hp-theory.theoryHP)<=0.15?'良好':r.hp-theory.theoryHP>0.15?'高め':'低め':'—'}</span></div><div class="compare-cell label">低圧 MPa</div><div class="compare-cell">${r.lp}</div><div class="compare-cell">${theory?theory.theoryLP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.lp-theory.theoryLP)<=0.08?'ok':theory&&r.lp-theory.theoryLP<-0.08?'ng':'warn'}">${theory?Math.abs(r.lp-theory.theoryLP)<=0.08?'良好':r.lp<theory.theoryLP?'低め':'高め':'—'}</span></div><div class="compare-cell label">吐出温度 ℃</div><div class="compare-cell">${r.td}</div><div class="compare-cell">60〜90</div><div class="compare-cell"><span class="badge ${r.td>100?'ng':r.td>90?'warn':'ok'}">${r.td>100?'高め':r.td>90?'要注意':'良好'}</span></div><div class="compare-cell label">吸込温度 ℃</div><div class="compare-cell">${isNaN(r.ts)?'—':r.ts}</div><div class="compare-cell">—</div><div class="compare-cell"><span class="badge ${!isNaN(r.ts)?'ok':'warn'}">${!isNaN(r.ts)?'記録済':'—'}</span></div><div class="compare-cell label">設定温度 ℃</div><div class="compare-cell">${isNaN(r.settemp)?'—':r.settemp}</div><div class="compare-cell">—</div><div class="compare-cell"><span class="badge ${!isNaN(r.settemp)?'ok':'warn'}">${!isNaN(r.settemp)?'記録済':'—'}</span></div>${!isNaN(r.amp)?`<div class="compare-cell label">電流 A</div><div class="compare-cell">${r.amp}</div><div class="compare-cell">定格値参照</div><div class="compare-cell"><span class="badge ok">記録済</span></div>`:''}</div><div class="diag-box ${r.diag.status}">${r.diag.msg}</div>${r.isPartial?`<div style="margin-top:8px;font-size:12px;color:var(--text3);border-top:0.5px solid var(--border);padding-top:8px">⚠️ 空白項目があるため参考データです。</div>`:''} ${r.note?`<div style="margin-top:8px;font-size:12px;color:var(--text2)">📝 ${r.note}</div>`:''}</div>`;}).join('');}
+function renderRecords(){const el=document.getElementById('records-list');if(records.length===0){el.innerHTML='<div class="empty">記録がありません。<br>「データ入力」から最初の診断を行いましょう。</div>';return;}el.innerHTML=records.map(r=>{const theory=r.diag.theory||getTheory(r.refrigerant||'R404A',r.amb,r.indoor);const sh=parseFloat(r.diag.superheat);const isR600a=r.refrigerant==='R600a';return`<div class="result-card"><div class="result-header"><div><span class="result-name">${r.site}</span><br><span style="font-size:11px;color:var(--color-text-tertiary)">${typeLabel(r.type)} / ${r.model}</span></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="badge ${isR600a?'purple':'info'}">${r.refrigerant||'—'}</span><span class="result-date">${r.date}</span><button class="delete-btn" onclick="deleteRecord(${r.id})">×</button></div></div><div class="metric-row"><div class="metric"><div class="metric-label">圧縮比</div><div class="metric-value">${r.diag.pressRatio}</div></div><div class="metric"><div class="metric-label">過熱度</div><div class="metric-value">${r.diag.superheat}℃</div></div><div class="metric"><div class="metric-label">診断結果</div><div class="metric-value" style="font-size:14px"><span class="badge ${r.diag.status}">${r.diag.label}</span></div></div></div><div class="compare-grid"><div class="compare-header">項目</div><div class="compare-header">実測値</div><div class="compare-header">理論値（${r.refrigerant||'—'}）</div><div class="compare-header">判定</div><div class="compare-cell label">高圧 MPa</div><div class="compare-cell">${r.hp}</div><div class="compare-cell">${theory?theory.theoryHP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.hp-theory.theoryHP)<=0.15?'ok':theory&&r.hp-theory.theoryHP>0.15?'ng':'warn'}">${theory?Math.abs(r.hp-theory.theoryHP)<=0.15?'良好':r.hp-theory.theoryHP>0.15?'高め':'低め':'—'}</span></div><div class="compare-cell label">低圧 MPa</div><div class="compare-cell">${r.lp}</div><div class="compare-cell">${theory?theory.theoryLP:'—'}</div><div class="compare-cell"><span class="badge ${theory&&Math.abs(r.lp-theory.theoryLP)<=0.08?'ok':theory&&r.lp-theory.theoryLP<-0.08?'ng':'warn'}">${theory?Math.abs(r.lp-theory.theoryLP)<=0.08?'良好':r.lp<theory.theoryLP?'低め':'高め':'—'}</span></div><div class="compare-cell label">吐出温度 ℃</div><div class="compare-cell">${r.td}</div><div class="compare-cell">60〜90</div><div class="compare-cell"><span class="badge ${r.td>100?'ng':r.td>90?'warn':'ok'}">${r.td>100?'高め':r.td>90?'要注意':'良好'}</span></div><div class="compare-cell label">過熱度 ℃</div><div class="compare-cell">${r.diag.superheat}</div><div class="compare-cell">5〜10</div><div class="compare-cell"><span class="badge ${sh<3?'ng':sh>15?'warn':'ok'}">${sh<3?'液バック注意':sh>15?'過大':'良好'}</span></div>${!isNaN(r.amp)?`<div class="compare-cell label">運転電流 A</div><div class="compare-cell">${r.amp}</div><div class="compare-cell">定格値参照</div><div class="compare-cell"><span class="badge ok">記録済</span></div>`:''}</div><div class="diag-box ${r.diag.status}">${r.diag.msg}</div>${r.note?`<div style="margin-top:8px;font-size:12px;color:var(--color-text-secondary)">📝 ${r.note}</div>`:''}</div>`;}).join('');}
 updateRefInfo();
 loadRecords();
 </script>
-</body>
-</html>
