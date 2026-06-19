@@ -80,7 +80,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 </head>
 <body>
 <div class="app">
-<div style="padding:0.75rem 1rem 0.25rem"><span onclick="location.reload()" style="font-size:20px;font-weight:700;color:#333;cursor:pointer;-webkit-user-select:none;user-select:none">Rec's</span></div>
+<div style="padding:0.75rem 1rem 0.25rem"><span onclick="this.style.opacity='0.3';this.style.transform='scale(0.85)';setTimeout(()=>location.reload(),250)" style="font-size:20px;font-weight:700;color:#333;cursor:pointer;-webkit-user-select:none;user-select:none;display:inline-block;transition:opacity 0.15s,transform 0.15s">Rec's</span></div>
 <div class="tabs">
   <button class="tab active" onclick="showTab('input')">📋 データ入力</button>
   <button class="tab" onclick="showTab('records')">🗂 記録一覧</button>
