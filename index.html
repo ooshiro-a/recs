@@ -14,9 +14,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .section-title{font-size:10px;font-weight:700;color:#999;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px;margin-top:8px;padding:0 1rem}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;padding:0 1rem}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;padding:0 1rem}
-.field{display:flex;flex-direction:column;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field label{font-size:11px;color:#666;font-weight:600}
-.field input,.field select{height:44px;padding:0 12px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#333;font-size:15px}
+.field input,.field select{width:100%;height:44px;padding:0 12px;border:1px solid #ddd;border-radius:10px;background:#fff;color:#333;font-size:15px}
 .field input:focus,.field select:focus{outline:none;border-color:#333;box-shadow:0 0 0 2px rgba(0,0,0,0.05)}
 .unit{font-size:9px;color:#999;margin-top:2px}
 .btn-primary{width:calc(100% - 2rem);height:50px;background:#333;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;margin:12px 1rem;letter-spacing:0.02em}
@@ -75,10 +75,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .toast.success{background:#4caf50}
 .toast.error{background:#f44336}
 @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(max-width:480px){.grid2,.grid3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
+<div style="padding:0.75rem 1rem 0.25rem"><span onclick="location.reload()" style="font-size:20px;font-weight:700;color:#333;cursor:pointer;-webkit-user-select:none;user-select:none">Rec's</span></div>
 <div class="tabs">
   <button class="tab active" onclick="showTab('input')">📋 データ入力</button>
   <button class="tab" onclick="showTab('records')">🗂 記録一覧</button>
@@ -186,50 +188,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="scale-title">🌡 冷媒スケール（飽和圧力・温度対応）</div>
     <div class="scale-selector" id="scale-btns"></div>
     
-    <div class="section-title" style="padding:0;margin-top:0">圧力ゲージ</div>
-    <div class="gauge-wrapper">
-      <div class="gauge-container">
-        <svg id="gauge-svg" class="gauge-svg" viewBox="0 0 320 220" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="shadowFilter">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="0.5"/>
-            </filter>
-          </defs>
-          <g id="gauge-base">
-            <path d="M 40 180 A 120 120 0 0 1 280 180" fill="none" stroke="#e8e8e8" stroke-width="10" stroke-linecap="round"/>
-            <path id="gauge-arc-low" d="M 40 180 A 120 120 0 0 1 160 60" fill="none" stroke="#0066ff" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
-            <path id="gauge-arc-high" d="M 160 60 A 120 120 0 0 1 280 180" fill="none" stroke="#ff0000" stroke-width="10" stroke-linecap="round" opacity="0.25"/>
-          </g>
-          <g id="gauge-ticks"></g>
-          <g id="gauge-labels"></g>
-          <line x1="160" y1="180" x2="160" y2="30" stroke="#333" stroke-width="3" id="gauge-needle" stroke-linecap="round" filter="url(#shadowFilter)"/>
-          <circle cx="160" cy="180" r="6" fill="#333" filter="url(#shadowFilter)"/>
-          <text x="160" y="210" text-anchor="middle" font-size="13" font-weight="600" fill="#666">MPa</text>
-        </svg>
-      </div>
-      <div class="gauge-info">
-        <div class="gauge-stat">
-          <div class="gauge-label">現在の圧力</div>
-          <div class="gauge-value-display" id="gauge-display-value">—</div>
-        </div>
-        <div class="gauge-stat">
-          <div class="gauge-label">圧力入力</div>
-          <div class="gauge-value-display" id="gauge-input-value">—</div>
-        </div>
-      </div>
-    </div>
-    
-    <div class="section-title" style="padding:0">圧力 → 飽和温度 換算</div>
-    <div class="conv-row">
-      <div class="conv-input field">
-        <label>圧力を入力</label>
-        <input id="conv-press" type="number" step="0.01" placeholder="0.63"/>
+    <div class="section-title" style="padding:0;margin-top:0">圧力 → 飽和温度 換算</div>
+
+    <div style="border:2px solid #2563eb;border-radius:14px;padding:1rem;margin:0 1rem 10px">
+      <div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:10px">🔵 低圧（蒸発側）</div>
+      <div class="field">
+        <label>吸入圧力</label>
+        <input id="scale-lp" type="number" step="0.01" placeholder="0.30" oninput="calcScaleLp()"/>
         <div class="unit">MPa</div>
       </div>
-      <div class="conv-result" id="conv-result">
-        <strong>—</strong>
-        圧力を入力すると<br>飽和温度を表示
+      <div id="scale-lp-result" style="background:#e8f0ff;border-radius:10px;padding:14px;text-align:center;font-size:28px;font-weight:700;color:#2563eb;font-family:monospace;margin-top:10px">—</div>
+      <div style="font-size:10px;color:#666;text-align:center;margin-top:4px">飽和温度（蒸発温度）</div>
+    </div>
+
+    <div style="border:2px solid #dc2626;border-radius:14px;padding:1rem;margin:0 1rem 10px">
+      <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:10px">🔴 高圧（凝縮側）</div>
+      <div class="field">
+        <label>吐出圧力</label>
+        <input id="scale-hp" type="number" step="0.01" placeholder="1.85" oninput="calcScaleHp()"/>
+        <div class="unit">MPa</div>
       </div>
+      <div id="scale-hp-result" style="background:#fff0f0;border-radius:10px;padding:14px;text-align:center;font-size:28px;font-weight:700;color:#dc2626;font-family:monospace;margin-top:10px">—</div>
+      <div style="font-size:10px;color:#666;text-align:center;margin-top:4px">飽和温度（凝縮温度）</div>
     </div>
     
     <div class="section-title" style="padding:0;margin-top:16px">飽和温度 → 圧力 一覧</div>
@@ -264,7 +244,7 @@ function renderRecords(){const el=document.getElementById('records-list');if(rec
 
 function saveRecord(){const site=document.getElementById('site').value.trim();const model=document.getElementById('model').value.trim();if(!site||!model){alert('現場名と機種名を入力してください');return;}const record={id:Date.now(),date:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}),site,model,type:document.getElementById('type').value,refrigerant:document.getElementById('refrigerant').value,hp:parseFloat(document.getElementById('hp').value)||0,lp:parseFloat(document.getElementById('lp').value)||0,td:parseFloat(document.getElementById('td').value)||0,ts:parseFloat(document.getElementById('ts').value)||0,amb:parseFloat(document.getElementById('amb').value)||0,indoor:parseFloat(document.getElementById('indoor').value)||0,amp:parseFloat(document.getElementById('amp').value)||0,note:document.getElementById('note').value.trim(),sent:false};records.unshift(record);saveRecords();document.getElementById('site').value='';document.getElementById('model').value='';document.getElementById('type').value='ice';document.getElementById('refrigerant').value='R404A';document.getElementById('hp').value='';document.getElementById('lp').value='';document.getElementById('td').value='';document.getElementById('ts').value='';document.getElementById('amb').value='';document.getElementById('indoor').value='';document.getElementById('amp').value='';document.getElementById('note').value='';showToast('記録を保存しました','success');showTab('records');}
 
-let currentScaleRef='R404A';function drawGauge(){const svg=document.getElementById('gauge-svg');const labelsGroup=svg.querySelector('#gauge-labels');const ticksGroup=svg.querySelector('#gauge-ticks');labelsGroup.innerHTML='';ticksGroup.innerHTML='';for(let i=0;i<=20;i++){const press=i*0.1;const angle_frac=i/20;const rad=Math.PI+angle_frac*Math.PI;const x=160+130*Math.cos(rad);const y=180+130*Math.sin(rad);const text=document.createElementNS('http://www.w3.org/2000/svg','text');text.setAttribute('x',x);text.setAttribute('y',y+5);text.setAttribute('text-anchor','middle');text.setAttribute('font-size','12');text.setAttribute('font-weight','600');text.setAttribute('fill',press<1?'#0066cc':'#cc0000');text.textContent=press.toFixed(1);labelsGroup.appendChild(text);const tx1=160+115*Math.cos(rad);const ty1=180+115*Math.sin(rad);const tx2=160+132*Math.cos(rad);const ty2=180+132*Math.sin(rad);const line=document.createElementNS('http://www.w3.org/2000/svg','line');line.setAttribute('x1',tx1);line.setAttribute('y1',ty1);line.setAttribute('x2',tx2);line.setAttribute('y2',ty2);line.setAttribute('stroke',press<1?'#0066cc':'#cc0000');line.setAttribute('stroke-width','2');line.setAttribute('opacity','0.6');ticksGroup.appendChild(line);}}function updateGauge(){const convPress=parseFloat(document.getElementById('conv-press').value);if(!isNaN(convPress)&&convPress>0&&convPress<=2){const angle_frac=convPress/2;const rad=Math.PI+angle_frac*Math.PI;const needle=document.getElementById('gauge-needle');needle.setAttribute('x2',160+110*Math.cos(rad));needle.setAttribute('y2',180+110*Math.sin(rad));needle.setAttribute('stroke',convPress<1?'#0066cc':'#cc0000');document.getElementById('gauge-display-value').textContent=convPress.toFixed(2);document.getElementById('gauge-input-value').textContent=convPress.toFixed(2);}else{document.getElementById('gauge-needle').setAttribute('x2',160);document.getElementById('gauge-needle').setAttribute('y2',30);document.getElementById('gauge-needle').setAttribute('stroke','#999');document.getElementById('gauge-display-value').textContent='—';document.getElementById('gauge-input-value').textContent='—';}}function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp};}function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();convertPress();}function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];if(!ref)return;const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#003d99;padding:8px 0">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item evap"><div class="scale-temp evap">${t}℃</div><div class="scale-press">${p.toFixed(3)}</div><div class="scale-unit">MPa</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#990000;padding:8px 0 0">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-item cond"><div class="scale-temp cond">${t}℃</div><div class="scale-press">${p.toFixed(3)}</div><div class="scale-unit">MPa</div></div>`).join('');el.innerHTML=html;}function convertPress(){const press=parseFloat(document.getElementById('conv-press').value);const el=document.getElementById('conv-result');updateGauge();if(isNaN(press)||press<=0){el.innerHTML='<strong>—</strong>圧力を入力すると<br>飽和温度を表示';return;}const r=pressToTemp(currentScaleRef,press);if(!r){el.innerHTML='<strong>—</strong>';return;}let html='';if(r.evapInterp!==null)html+=`<strong>蒸発: ${r.evapInterp}℃</strong><br>`;if(r.condInterp!==null)html+=`<strong>凝縮: ${r.condInterp}℃</strong>`;el.innerHTML=html;}function showTab(name){document.getElementById('tab-input').style.display=name==='input'?'':'none';document.getElementById('tab-records').style.display=name==='records'?'':'none';document.getElementById('tab-scale').style.display=name==='scale'?'':'none';const tabs=['input','records','scale'];document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',tabs[i]===name);});if(name==='records'){renderRecords();}if(name==='scale'){renderScaleBtns();renderScaleGrid();drawGauge();}}window.addEventListener('load',()=>{loadRecords();renderRecords();renderScaleBtns();renderScaleGrid();drawGauge();});
+let currentScaleRef='R404A';function calcScaleLp(){const press=parseFloat(document.getElementById('scale-lp').value);const el=document.getElementById('scale-lp-result');if(isNaN(press)||press<=0){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press);if(!r||r.evapInterp===null){el.textContent='—';return;}el.textContent=r.evapInterp+'℃';}function calcScaleHp(){const press=parseFloat(document.getElementById('scale-hp').value);const el=document.getElementById('scale-hp-result');if(isNaN(press)||press<=0){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press);if(!r||r.condInterp===null){el.textContent='—';return;}el.textContent=r.condInterp+'℃';}function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp};}function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();calcScaleLp();calcScaleHp();}function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];if(!ref)return;const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#003d99;padding:8px 0">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item evap"><div class="scale-temp evap">${t}℃</div><div class="scale-press">${p.toFixed(3)}</div><div class="scale-unit">MPa</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#990000;padding:8px 0 0">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-item cond"><div class="scale-temp cond">${t}℃</div><div class="scale-press">${p.toFixed(3)}</div><div class="scale-unit">MPa</div></div>`).join('');el.innerHTML=html;}function showTab(name){document.getElementById('tab-input').style.display=name==='input'?'':'none';document.getElementById('tab-records').style.display=name==='records'?'':'none';document.getElementById('tab-scale').style.display=name==='scale'?'':'none';const tabs=['input','records','scale'];document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',tabs[i]===name);});if(name==='records'){renderRecords();}if(name==='scale'){renderScaleBtns();renderScaleGrid();}}window.addEventListener('load',()=>{loadRecords();renderRecords();renderScaleBtns();renderScaleGrid();});
 </script>
 </body>
 </html>
