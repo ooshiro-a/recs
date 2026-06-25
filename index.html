@@ -161,6 +161,20 @@ details.shsc-acc .acc-body,details.cycle-acc .acc-body{padding:12px 1rem 14px;fo
 .karte-tbl .td-date{text-align:left;font-size:10px;color:#999;white-space:nowrap}
 .karte-note-row{padding:8px 10px;border-bottom:1px solid #f5f5f5;font-size:11px;color:#666;line-height:1.5}
 .karte-note-row:last-child{border-bottom:none}
+.karte-btn-star{background:transparent;border:1px solid #e5e7eb;border-radius:5px;font-size:11px;cursor:pointer;padding:2px 4px;color:#ccc;line-height:1;-webkit-tap-highlight-color:transparent;min-height:24px;vertical-align:middle}
+.karte-btn-star.active{background:#fffbeb;border-color:#f59e0b;color:#f59e0b}
+.karte-compare-panel{margin:0 1rem 12px;border:1px solid #fbbf24;border-radius:12px;overflow:hidden}
+.karte-compare-title{padding:10px 12px;background:#fef3c7;font-size:12px;font-weight:700;color:#92400e;border-bottom:1px solid #fbbf24}
+.karte-compare-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.karte-compare-tbl th{background:#fef9c3;padding:7px 8px;font-weight:600;color:#78350f;text-align:center;border-bottom:1px solid #fde68a;font-size:10px;white-space:nowrap}
+.karte-compare-tbl td{padding:7px 8px;border-bottom:1px solid #fef9c3;color:#333;vertical-align:middle}
+.karte-compare-tbl tr:last-child td{border-bottom:none}
+.kc-label{font-weight:600;color:#555;white-space:nowrap}
+.kc-unit{font-weight:400;color:#999;font-size:10px}
+.karte-hl-urgent{color:#c62828;font-weight:700}
+.karte-hl-warn{color:#e65100;font-weight:700}
+.karte-hl-urgent-row>td{background:#fff5f5}
+.karte-hl-warn-row>td{background:#fff8f0}
 </style>
 </head>
 <body>
@@ -589,6 +603,7 @@ details.shsc-acc .acc-body,details.cycle-acc .acc-body{padding:12px 1rem 14px;fo
   <div id="karte-detail-view" style="display:none">
     <button class="karte-back-btn" onclick="showKarteListView()">← 機器一覧へ戻る</button>
     <div id="karte-detail-header" style="padding:0 1rem 8px"></div>
+    <div id="karte-compare-panel"></div>
     <div class="section-title">指標推移（古い順）</div>
     <div class="karte-tbl-wrap">
       <table class="karte-tbl" id="karte-table"></table>
@@ -658,7 +673,7 @@ function renderRecords(list){const el=document.getElementById('records-list');co
 
 function saveRecord(){const site=document.getElementById('site').value.trim();const model=document.getElementById('model').value.trim();if(!site||!model){alert('現場名と機種名を入力してください');return;}const isEditing=editingId!==null;const hp=parseFloat(document.getElementById('hp').value)||0;const lp=parseFloat(document.getElementById('lp').value)||0;const td=parseFloat(document.getElementById('td').value)||0;const ts=parseFloat(document.getElementById('ts').value)||0;const amb=parseFloat(document.getElementById('amb').value)||0;const indoor=parseFloat(document.getElementById('indoor').value)||0;const amp=parseFloat(document.getElementById('amp').value)||0;const ltv=parseFloat(document.getElementById('lt').value);const lt=isNaN(ltv)?null:ltv;const refKey=document.getElementById('refrigerant').value;const {sh,sc}=getSHSC(refKey,lp,ts,hp,lt);const matrix=classifyMatrix(sh,sc);let record;if(isEditing){record=records.find(r=>r.id===editingId);if(!record){editingId=null;return;}Object.assign(record,{site,model,type:document.getElementById('type').value,refrigerant:refKey,hp,lp,td,ts,amb,indoor,amp,lt,note:document.getElementById('note').value.trim(),sh,sc,matrix,lastEdited:new Date().toISOString()});editingId=null;document.getElementById('edit-banner').classList.remove('show');document.getElementById('save-btn').textContent='診断して記録 →';}else{record={id:Date.now(),date:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}),site,model,type:document.getElementById('type').value,refrigerant:refKey,hp,lp,td,ts,amb,indoor,amp,lt,note:document.getElementById('note').value.trim(),sent:false,sh,sc,matrix};records.unshift(record);if(pendingPhotos.length){savePhotos(record.id,[...pendingPhotos]);pendingPhotos=[];const prow=document.getElementById('photo-preview-row');prow.innerHTML='';prow.style.cssText='';}}saveRecords();syncToCloud(record);clearForm();showToast(isEditing?'記録を更新しました':'記録を保存しました','success');showTab('records');}
 
-let currentScaleRef='R404A';function calcScaleLp(){const press=parseFloat(document.getElementById('scale-lp').value);const el=document.getElementById('scale-lp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.evapInterp===null){el.textContent='—';return;}el.textContent=r.evapInterp+'℃';}function calcScaleHp(){const press=parseFloat(document.getElementById('scale-hp').value);const el=document.getElementById('scale-hp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.condInterp===null){el.textContent='—';return;}el.textContent=r.condInterp+'℃';}function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp};}function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();calcScaleLp();calcScaleHp();}function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];if(!ref)return;const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#003d99;padding:8px 0">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item evap"><div class="scale-temp evap">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#990000;padding:8px 0 0">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-item cond"><div class="scale-temp cond">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');el.innerHTML=html;}function showTab(name){document.getElementById('tab-input').style.display=name==='input'?'':'none';document.getElementById('tab-records').style.display=name==='records'?'':'none';document.getElementById('tab-scale').style.display=name==='scale'?'':'none';document.getElementById('tab-shsc').style.display=name==='shsc'?'':'none';document.getElementById('tab-cycle').style.display=name==='cycle'?'':'none';document.getElementById('tab-karte').style.display=name==='karte'?'':'none';const tabs=['input','records','scale','shsc','cycle','karte'];document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',tabs[i]===name);});if(name==='records'){applyFilter();retrySynced();}if(name==='scale'){renderScaleBtns();renderScaleGrid();}if(name==='karte'){renderKarteList();}}window.addEventListener('load',()=>{openDB().catch(()=>{}).finally(()=>{loadRecords();applyFilter();renderScaleBtns();renderScaleGrid();retrySynced();});});
+let currentScaleRef='R404A';function calcScaleLp(){const press=parseFloat(document.getElementById('scale-lp').value);const el=document.getElementById('scale-lp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.evapInterp===null){el.textContent='—';return;}el.textContent=r.evapInterp+'℃';}function calcScaleHp(){const press=parseFloat(document.getElementById('scale-hp').value);const el=document.getElementById('scale-hp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.condInterp===null){el.textContent='—';return;}el.textContent=r.condInterp+'℃';}function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp};}function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();calcScaleLp();calcScaleHp();}function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];if(!ref)return;const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#003d99;padding:8px 0">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item evap"><div class="scale-temp evap">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#990000;padding:8px 0 0">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-item cond"><div class="scale-temp cond">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');el.innerHTML=html;}function showTab(name){document.getElementById('tab-input').style.display=name==='input'?'':'none';document.getElementById('tab-records').style.display=name==='records'?'':'none';document.getElementById('tab-scale').style.display=name==='scale'?'':'none';document.getElementById('tab-shsc').style.display=name==='shsc'?'':'none';document.getElementById('tab-cycle').style.display=name==='cycle'?'':'none';document.getElementById('tab-karte').style.display=name==='karte'?'':'none';const tabs=['input','records','scale','shsc','cycle','karte'];document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',tabs[i]===name);});if(name==='records'){applyFilter();retrySynced();}if(name==='scale'){renderScaleBtns();renderScaleGrid();}if(name==='karte'){renderKarteList();}}window.addEventListener('load',()=>{openDB().catch(()=>{}).finally(()=>{loadRecords();loadBaselines();applyFilter();renderScaleBtns();renderScaleGrid();retrySynced();});});
 
 function getDiagnosis(r){if(!r.hp||!r.lp||r.lp<=0)return{label:'データ不足',cls:'diag-none'};const ratio=r.hp/r.lp;if(ratio>8||(r.td>0&&r.td>110))return{label:'要点検',cls:'diag-urgent'};if(ratio>6||(r.td>0&&r.td>90))return{label:'要注意',cls:'diag-warn'};return{label:'正常',cls:'diag-ok'};}
 
@@ -796,6 +811,44 @@ function showKarteListView(){
   document.getElementById('karte-detail-view').style.display='none';
 }
 
+const BASELINE_KEY='recs_karte_baselines';
+let karteBaselines={};
+function loadBaselines(){try{const d=localStorage.getItem(BASELINE_KEY);if(d)karteBaselines=JSON.parse(d);}catch(e){}}
+function saveBaselines(){try{localStorage.setItem(BASELINE_KEY,JSON.stringify(karteBaselines));}catch(e){}}
+function setKarteBaseline(ek,rid){const key=decodeURIComponent(ek);if(karteBaselines[key]===rid){delete karteBaselines[key];}else{karteBaselines[key]=rid;}saveBaselines();showKarteDetail(ek);}
+
+function buildComparePanel(bRec,lRec){
+  function calcInd(r){try{const ratio=(r.hp&&r.lp&&r.lp>0)?r.hp/r.lp:null;const{sh,sc,evapSat,condSat}=getSHSC(r.refrigerant,r.lp,r.ts,r.hp,r.lt!=null?r.lt:null);const condDelta=(condSat!==null&&r.amb!=null&&!isNaN(Number(r.amb)))?(condSat-Number(r.amb)):null;const evapDelta=(evapSat!==null&&r.indoor!=null&&!isNaN(Number(r.indoor)))?(Number(r.indoor)-evapSat):null;return{ratio,sh,sc,condDelta,evapDelta};}catch(e){return{ratio:null,sh:null,sc:null,condDelta:null,evapDelta:null};}}
+  const bi=calcInd(bRec),li=calcInd(lRec);
+  const metrics=[{k:'ratio',label:'圧縮比',unit:'',th:0.5},{k:'sh',label:'SH',unit:'℃',th:3},{k:'sc',label:'SC',unit:'℃',th:3},{k:'condDelta',label:'凝縮器温度差',unit:'℃',th:3},{k:'evapDelta',label:'蒸発器温度差',unit:'℃',th:3}];
+  function hintTxt(k,d){if(d===null)return'';if(k==='sc'&&d<-3)return'冷媒不足・フラッシュガスの疑い';if(k==='sc'&&d>3)return'過充填・凝縮器の冷えすぎ等';if(k==='sh'&&d>3)return'冷媒不足の疑い';if(k==='sh'&&d<-3)return'過充填・膨張弁開き気味・液バック寄り';if(k==='condDelta'&&d>3)return'凝縮器の汚れ・風量不足';if(k==='evapDelta'&&d>3)return'着霜・詰まり・風量低下';if(k==='ratio'&&d>0.5)return'高圧上昇または低圧低下の異常';return'';}
+  function hlCls(k,d){if(d===null)return'';if(Math.abs(d)<(k==='ratio'?0.5:3))return'';if((k==='sc'&&d<0)||(k==='sh'&&d>0)||(k==='ratio'&&d>0))return'karte-hl-urgent';return'karte-hl-warn';}
+  let rows='';
+  metrics.forEach(function(m){
+    const bv=bi[m.k],lv=li[m.k];
+    const d=(bv!==null&&lv!==null)?lv-bv:null;
+    const hl=hlCls(m.k,d);
+    const fmt=function(v){return v===null?'—':(m.k==='ratio'?v.toFixed(2):v.toFixed(1));};
+    const dStr=d===null?'—':(d>=0?'+':'')+fmt(d);
+    const hint=hintTxt(m.k,d);
+    const dCell=hl?'<span class="'+hl+'">'+dStr+'</span>':dStr;
+    const hintEl=hint?'<div style="font-size:10px;color:#92400e;margin-top:2px">▶ '+hint+'</div>':'';
+    const unitEl=m.unit?' <span class="kc-unit">('+m.unit+')</span>':'';
+    rows+='<tr class="'+(hl?hl+'-row':'')+'">'+
+      '<td class="kc-label">'+m.label+unitEl+'</td>'+
+      '<td style="text-align:center">'+fmt(bv)+'</td>'+
+      '<td style="text-align:center">'+fmt(lv)+'</td>'+
+      '<td>'+dCell+hintEl+'</td></tr>';
+  });
+  return '<div class="karte-compare-panel">'+
+    '<div class="karte-compare-title">⭐ 正常基準との比較（最新：'+lRec.date+' vs 基準：'+bRec.date+'）</div>'+
+    '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">'+
+    '<table class="karte-compare-tbl"><thead><tr><th>指標</th><th>基準値</th><th>最新値</th><th>差・ヒント</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    '</div>'+
+    '<div style="padding:5px 10px 7px;font-size:10px;color:#999;text-align:right;background:#fffbeb">差は目安。最終判断は現場で</div>'+
+    '</div>';
+}
+
 function showKarteDetail(ek){
   const key=decodeURIComponent(ek);
   const sep=key.indexOf('|||');
@@ -809,27 +862,43 @@ function showKarteDetail(ek){
   const hdr=document.getElementById('karte-detail-header');
   const firstType=group.length?typeLabel(group[0].type||'other'):'';
   const firstRef=group.length?group[0].refrigerant:'';
-  hdr.innerHTML=`<div style="font-size:16px;font-weight:700;color:#333">${site}</div><div class="record-meta" style="margin-top:2px">${firstType} / ${model} / ${firstRef}</div>`;
+  hdr.innerHTML='<div style="font-size:16px;font-weight:700;color:#333">'+site+'</div><div class="record-meta" style="margin-top:2px">'+firstType+' / '+model+' / '+firstRef+'</div>';
+  const groupKey=site+'|||'+model;
+  const baselineId=karteBaselines[groupKey];
+  const baselineRec=baselineId!=null?group.find(r=>r.id===baselineId)||null:null;
+  const cpEl=document.getElementById('karte-compare-panel');
+  if(baselineRec&&group.length>=2){
+    const latestRec=group[group.length-1];
+    if(latestRec.id!==baselineRec.id){cpEl.innerHTML=buildComparePanel(baselineRec,latestRec);}
+    else{cpEl.innerHTML='<div class="karte-compare-panel"><div class="karte-compare-title">⭐ 正常基準が最新記録に設定されています</div></div>';}
+  }else{cpEl.innerHTML='';}
   let tbody='';
   group.forEach(r=>{
     try{
+      const isBase=baselineRec!=null&&r.id===baselineId;
+      const starBtn='<button class="karte-btn-star'+(isBase?' active':'')+'" onclick="setKarteBaseline(\''+ek+'\','+r.id+')">'+(isBase?'⭐':'☆')+'</button>';
       const ratio=(r.hp&&r.lp&&r.lp>0)?(r.hp/r.lp).toFixed(2):'—';
-      const {sh,sc,evapSat,condSat}=getSHSC(r.refrigerant,r.lp,r.ts,r.hp,r.lt!=null?r.lt:null);
+      const{sh,sc,evapSat,condSat}=getSHSC(r.refrigerant,r.lp,r.ts,r.hp,r.lt!=null?r.lt:null);
       const condDelta=(condSat!==null&&r.amb!=null&&!isNaN(Number(r.amb)))?(condSat-Number(r.amb)):null;
       const evapDelta=(evapSat!==null&&r.indoor!=null&&!isNaN(Number(r.indoor)))?(Number(r.indoor)-evapSat):null;
       const diag=getDiagnosis(r);
       const ambStr=(r.amb&&!isNaN(Number(r.amb)))?Number(r.amb).toFixed(1):'—';
-      tbody+=`<tr><td class="td-date">${r.date}</td><td>${ratio}</td><td>${sh!==null?sh.toFixed(1):'—'}</td><td>${sc!==null?sc.toFixed(1):'—'}</td><td>${condDelta!==null?condDelta.toFixed(1):'—'}</td><td>${evapDelta!==null?evapDelta.toFixed(1):'—'}</td><td>${ambStr}</td><td><span class="${diag.cls}">${diag.label}</span></td></tr>`;
+      tbody+='<tr'+(isBase?' style="background:#fffbeb"':'')+'>'+
+        '<td class="td-date">'+starBtn+' '+r.date+'</td>'+
+        '<td>'+ratio+'</td>'+
+        '<td>'+(sh!==null?sh.toFixed(1):'—')+'</td>'+
+        '<td>'+(sc!==null?sc.toFixed(1):'—')+'</td>'+
+        '<td>'+(condDelta!==null?condDelta.toFixed(1):'—')+'</td>'+
+        '<td>'+(evapDelta!==null?evapDelta.toFixed(1):'—')+'</td>'+
+        '<td>'+ambStr+'</td>'+
+        '<td><span class="'+diag.cls+'">'+diag.label+'</span></td></tr>';
     }catch(e){}
   });
-  document.getElementById('karte-table').innerHTML=`<thead><tr><th>日付</th><th>圧縮比</th><th>SH<br>℃</th><th>SC<br>℃</th><th>凝縮器<br>温度差</th><th>蒸発器<br>温度差</th><th>外気<br>℃</th><th>診断</th></tr></thead><tbody>${tbody}</tbody>`;
+  document.getElementById('karte-table').innerHTML='<thead><tr><th>日付</th><th>圧縮比</th><th>SH<br>℃</th><th>SC<br>℃</th><th>凝縮器<br>温度差</th><th>蒸発器<br>温度差</th><th>外気<br>℃</th><th>診断</th></tr></thead><tbody>'+tbody+'</tbody>';
   const notedRecords=group.filter(r=>r.note&&r.note.trim());
   const notesEl=document.getElementById('karte-notes');
-  if(notedRecords.length){
-    notesEl.innerHTML='<div class="section-title" style="margin-top:12px">メモ・備考</div><div style="margin:0 1rem;border:1px solid #ddd;border-radius:10px;overflow:hidden">'+notedRecords.map(r=>`<div class="karte-note-row"><span style="font-size:10px;color:#999;margin-right:8px">${r.date}</span>${r.note}</div>`).join('')+'</div>';
-  }else{
-    notesEl.innerHTML='';
-  }
+  if(notedRecords.length){notesEl.innerHTML='<div class="section-title" style="margin-top:12px">メモ・備考</div><div style="margin:0 1rem;border:1px solid #ddd;border-radius:10px;overflow:hidden">'+notedRecords.map(r=>'<div class="karte-note-row"><span style="font-size:10px;color:#999;margin-right:8px">'+r.date+'</span>'+r.note+'</div>').join('')+'</div>';}
+  else{notesEl.innerHTML='';}
   document.getElementById('karte-list-view').style.display='none';
   document.getElementById('karte-detail-view').style.display='';
 }
