@@ -150,6 +150,17 @@ details.shsc-acc .acc-body,details.cycle-acc .acc-body{padding:12px 1rem 14px;fo
 .acc-step:last-child{margin-bottom:0}
 .acc-label{font-size:10px;font-weight:700;color:#999;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px}
 .cycle-diagram-wrap{margin:0 1rem 16px;padding:16px;background:#f9f9f9;border-radius:14px;border:1px solid #eee}
+.karte-card{border:1px solid #ddd;border-radius:12px;padding:12px;margin-bottom:10px;background:#fafafa;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.karte-card:active{background:#f0f0f0}
+.karte-back-btn{display:flex;align-items:center;gap:6px;padding:12px 1rem;font-size:14px;font-weight:600;color:#333;cursor:pointer;border:none;background:transparent;width:100%;text-align:left;-webkit-tap-highlight-color:transparent;min-height:44px}
+.karte-tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 1rem;border:1px solid #ddd;border-radius:10px}
+.karte-tbl{width:100%;border-collapse:collapse;font-size:11px;white-space:nowrap}
+.karte-tbl th{background:#f5f5f5;padding:8px 6px;font-weight:600;color:#666;text-align:center;border-bottom:2px solid #ddd}
+.karte-tbl td{padding:7px 6px;border-bottom:1px solid #f0f0f0;text-align:center;color:#333}
+.karte-tbl tr:last-child td{border-bottom:none}
+.karte-tbl .td-date{text-align:left;font-size:10px;color:#999;white-space:nowrap}
+.karte-note-row{padding:8px 10px;border-bottom:1px solid #f5f5f5;font-size:11px;color:#666;line-height:1.5}
+.karte-note-row:last-child{border-bottom:none}
 </style>
 </head>
 <body>
@@ -161,6 +172,7 @@ details.shsc-acc .acc-body,details.cycle-acc .acc-body{padding:12px 1rem 14px;fo
   <button class="tab" onclick="showTab('scale')">🌡 冷媒スケール</button>
   <button class="tab" onclick="showTab('shsc')">🎯 SH/SC早見</button>
   <button class="tab" onclick="showTab('cycle')">🔄 冷凍サイクル</button>
+  <button class="tab" onclick="showTab('karte')">📈 機器カルテ</button>
 </div>
 
 <div id="tab-input">
@@ -568,6 +580,22 @@ details.shsc-acc .acc-body,details.cycle-acc .acc-body{padding:12px 1rem 14px;fo
   <div style="margin:4px 1rem 20px;padding:12px;background:#f9f9f9;border-radius:10px;font-size:11px;color:#666;line-height:1.7;border:1px solid #eee">各工程の異常は単独でなく連鎖する。SHとSCを合わせて見ると原因を切り分けやすい（詳しくは<strong>SH/SC早見</strong>タブと記録一覧の診断を参照）。</div>
 
 </div>
+
+<div id="tab-karte" style="display:none">
+  <div id="karte-list-view">
+    <div class="section-title">機器カルテ</div>
+    <div class="records-list" id="karte-list"></div>
+  </div>
+  <div id="karte-detail-view" style="display:none">
+    <button class="karte-back-btn" onclick="showKarteListView()">← 機器一覧へ戻る</button>
+    <div id="karte-detail-header" style="padding:0 1rem 8px"></div>
+    <div class="section-title">指標推移（古い順）</div>
+    <div class="karte-tbl-wrap">
+      <table class="karte-tbl" id="karte-table"></table>
+    </div>
+    <div id="karte-notes"></div>
+  </div>
+</div>
 </div>
 
 <div class="modal-overlay" id="comp-modal" onclick="if(event.target===this)closeComparison()">
@@ -630,7 +658,7 @@ function renderRecords(list){const el=document.getElementById('records-list');co
 
 function saveRecord(){const site=document.getElementById('site').value.trim();const model=document.getElementById('model').value.trim();if(!site||!model){alert('現場名と機種名を入力してください');return;}const isEditing=editingId!==null;const hp=parseFloat(document.getElementById('hp').value)||0;const lp=parseFloat(document.getElementById('lp').value)||0;const td=parseFloat(document.getElementById('td').value)||0;const ts=parseFloat(document.getElementById('ts').value)||0;const amb=parseFloat(document.getElementById('amb').value)||0;const indoor=parseFloat(document.getElementById('indoor').value)||0;const amp=parseFloat(document.getElementById('amp').value)||0;const ltv=parseFloat(document.getElementById('lt').value);const lt=isNaN(ltv)?null:ltv;const refKey=document.getElementById('refrigerant').value;const {sh,sc}=getSHSC(refKey,lp,ts,hp,lt);const matrix=classifyMatrix(sh,sc);let record;if(isEditing){record=records.find(r=>r.id===editingId);if(!record){editingId=null;return;}Object.assign(record,{site,model,type:document.getElementById('type').value,refrigerant:refKey,hp,lp,td,ts,amb,indoor,amp,lt,note:document.getElementById('note').value.trim(),sh,sc,matrix,lastEdited:new Date().toISOString()});editingId=null;document.getElementById('edit-banner').classList.remove('show');document.getElementById('save-btn').textContent='診断して記録 →';}else{record={id:Date.now(),date:new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit'}),site,model,type:document.getElementById('type').value,refrigerant:refKey,hp,lp,td,ts,amb,indoor,amp,lt,note:document.getElementById('note').value.trim(),sent:false,sh,sc,matrix};records.unshift(record);if(pendingPhotos.length){savePhotos(record.id,[...pendingPhotos]);pendingPhotos=[];const prow=document.getElementById('photo-preview-row');prow.innerHTML='';prow.style.cssText='';}}saveRecords();syncToCloud(record);clearForm();showToast(isEditing?'記録を更新しました':'記録を保存しました','success');showTab('records');}
 
-let currentScaleRef='R404A';function calcScaleLp(){const press=parseFloat(document.getElementById('scale-lp').value);const el=document.getElementById('scale-lp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.evapInterp===null){el.textContent='—';return;}el.textContent=r.evapInterp+'℃';}function calcScaleHp(){const press=parseFloat(document.getElementById('scale-hp').value);const el=document.getElementById('scale-hp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.condInterp===null){el.textContent='—';return;}el.textContent=r.condInterp+'℃';}function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp};}function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();calcScaleLp();calcScaleHp();}function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];if(!ref)return;const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#003d99;padding:8px 0">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item evap"><div class="scale-temp evap">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#990000;padding:8px 0 0">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-item cond"><div class="scale-temp cond">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');el.innerHTML=html;}function showTab(name){document.getElementById('tab-input').style.display=name==='input'?'':'none';document.getElementById('tab-records').style.display=name==='records'?'':'none';document.getElementById('tab-scale').style.display=name==='scale'?'':'none';document.getElementById('tab-shsc').style.display=name==='shsc'?'':'none';document.getElementById('tab-cycle').style.display=name==='cycle'?'':'none';const tabs=['input','records','scale','shsc','cycle'];document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',tabs[i]===name);});if(name==='records'){applyFilter();retrySynced();}if(name==='scale'){renderScaleBtns();renderScaleGrid();}}window.addEventListener('load',()=>{openDB().catch(()=>{}).finally(()=>{loadRecords();applyFilter();renderScaleBtns();renderScaleGrid();retrySynced();});});
+let currentScaleRef='R404A';function calcScaleLp(){const press=parseFloat(document.getElementById('scale-lp').value);const el=document.getElementById('scale-lp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.evapInterp===null){el.textContent='—';return;}el.textContent=r.evapInterp+'℃';}function calcScaleHp(){const press=parseFloat(document.getElementById('scale-hp').value);const el=document.getElementById('scale-hp-result');if(isNaN(press)){el.textContent='—';return;}const r=pressToTemp(currentScaleRef,press+ATM);if(!r||r.condInterp===null){el.textContent='—';return;}el.textContent=r.condInterp+'℃';}function pressToTemp(refKey,press){const ref=REFRIGERANTS[refKey];if(!ref)return null;const evapKeys=Object.keys(ref.evap).map(Number).sort((a,b)=>a-b);const condKeys=Object.keys(ref.cond).map(Number).sort((a,b)=>a-b);let evapInterp=null;for(let i=0;i<evapKeys.length-1;i++){const t1=evapKeys[i],t2=evapKeys[i+1];const p1=ref.evap[String(t1)],p2=ref.evap[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);evapInterp=t.toFixed(1);break;}}let condInterp=null;for(let i=0;i<condKeys.length-1;i++){const t1=condKeys[i],t2=condKeys[i+1];const p1=ref.cond[String(t1)],p2=ref.cond[String(t2)];if(p2===p1)continue;if(press>=Math.min(p1,p2)&&press<=Math.max(p1,p2)){const t=t1+(press-p1)/(p2-p1)*(t2-t1);condInterp=t.toFixed(1);break;}}return{evapInterp,condInterp};}function renderScaleBtns(){const el=document.getElementById('scale-btns');el.innerHTML=Object.keys(REFRIGERANTS).map(k=>`<button class="scale-btn${k===currentScaleRef?' active':''}" onclick="selectScale('${k}')">${k}</button>`).join('');}function selectScale(refKey){currentScaleRef=refKey;renderScaleBtns();renderScaleGrid();calcScaleLp();calcScaleHp();}function renderScaleGrid(){const ref=REFRIGERANTS[currentScaleRef];if(!ref)return;const el=document.getElementById('scale-grid');const evapRows=Object.entries(ref.evap).sort((a,b)=>Number(a[0])-Number(b[0]));const condRows=Object.entries(ref.cond).sort((a,b)=>Number(a[0])-Number(b[0]));let html=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#003d99;padding:8px 0">▼ 蒸発側（低圧）</div>`;html+=evapRows.map(([t,p])=>`<div class="scale-item evap"><div class="scale-temp evap">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');html+=`<div style="grid-column:1/-1;font-size:10px;font-weight:700;color:#990000;padding:8px 0 0">▲ 凝縮側（高圧）</div>`;html+=condRows.map(([t,p])=>`<div class="scale-item cond"><div class="scale-temp cond">${t}℃</div><div class="scale-press">${aToG(p).toFixed(2)}</div><div class="scale-unit">MPa G</div></div>`).join('');el.innerHTML=html;}function showTab(name){document.getElementById('tab-input').style.display=name==='input'?'':'none';document.getElementById('tab-records').style.display=name==='records'?'':'none';document.getElementById('tab-scale').style.display=name==='scale'?'':'none';document.getElementById('tab-shsc').style.display=name==='shsc'?'':'none';document.getElementById('tab-cycle').style.display=name==='cycle'?'':'none';document.getElementById('tab-karte').style.display=name==='karte'?'':'none';const tabs=['input','records','scale','shsc','cycle','karte'];document.querySelectorAll('.tab').forEach((t,i)=>{t.classList.toggle('active',tabs[i]===name);});if(name==='records'){applyFilter();retrySynced();}if(name==='scale'){renderScaleBtns();renderScaleGrid();}if(name==='karte'){renderKarteList();}}window.addEventListener('load',()=>{openDB().catch(()=>{}).finally(()=>{loadRecords();applyFilter();renderScaleBtns();renderScaleGrid();retrySynced();});});
 
 function getDiagnosis(r){if(!r.hp||!r.lp||r.lp<=0)return{label:'データ不足',cls:'diag-none'};const ratio=r.hp/r.lp;if(ratio>8||(r.td>0&&r.td>110))return{label:'要点検',cls:'diag-urgent'};if(ratio>6||(r.td>0&&r.td>90))return{label:'要注意',cls:'diag-warn'};return{label:'正常',cls:'diag-ok'};}
 
@@ -733,6 +761,77 @@ function calcSC(){
   if(sc<SC_RANGE.low){valEl.style.color='#e65100';badgeEl.innerHTML='<span class="shsc-badge-low">小さい</span>';hintEl.textContent='冷媒不足・フラッシュガスの疑い（液管で冷媒が気化している可能性）';}
   else if(sc>SC_RANGE.high){valEl.style.color='#c62828';badgeEl.innerHTML='<span class="shsc-badge-high">大きい</span>';hintEl.textContent='冷媒過多・凝縮器の冷えすぎ等の疑い';}
   else{valEl.style.color='#16a34a';badgeEl.innerHTML='<span class="shsc-badge-ok">適正</span>';hintEl.textContent='';}
+}
+
+function renderKarteList(){
+  showKarteListView();
+  const groups={};
+  records.forEach(r=>{
+    const site=(r.site||'').trim()||'未設定';
+    const model=(r.model||'').trim()||'未設定';
+    const key=site+'|||'+model;
+    if(!groups[key]){groups[key]={site,model,type:r.type,refrigerant:r.refrigerant,records:[]};}
+    groups[key].records.push(r);
+  });
+  const sorted=Object.values(groups).sort((a,b)=>{
+    const la=a.records.reduce((m,r)=>r.date>m?r.date:m,'');
+    const lb=b.records.reduce((m,r)=>r.date>m?r.date:m,'');
+    return lb>la?1:lb<la?-1:0;
+  });
+  const el=document.getElementById('karte-list');
+  if(!sorted.length){el.innerHTML='<div class="empty-state">記録がありません<br>データ入力タブから診断を開始しましょう</div>';return;}
+  el.innerHTML=sorted.map(g=>{
+    const latest=g.records.reduce((m,r)=>r.date>m.date?r:m,g.records[0]);
+    const ek=encodeURIComponent(g.site+'|||'+g.model).replace(/'/g,'%27');
+    const diags=g.records.map(r=>getDiagnosis(r).label);
+    const hasUrgent=diags.some(d=>d==='要点検');
+    const hasWarn=diags.some(d=>d==='要注意');
+    const statBadge=hasUrgent?'<span class="diag-urgent">要点検あり</span>':hasWarn?'<span class="diag-warn">要注意あり</span>':'<span class="diag-ok">正常のみ</span>';
+    return`<div class="karte-card" onclick="showKarteDetail('${ek}')"><div class="record-header"><div><div class="record-site">${g.site}</div><div class="record-meta">${typeLabel(g.type||'other')} / ${g.model} / ${g.refrigerant}</div></div><div style="text-align:right"><div class="record-date">最新: ${latest.date}</div><div style="margin-top:4px">${statBadge}</div><div style="font-size:11px;color:#999;margin-top:2px">${g.records.length}件の記録</div></div></div></div>`;
+  }).join('');
+}
+
+function showKarteListView(){
+  document.getElementById('karte-list-view').style.display='';
+  document.getElementById('karte-detail-view').style.display='none';
+}
+
+function showKarteDetail(ek){
+  const key=decodeURIComponent(ek);
+  const sep=key.indexOf('|||');
+  const site=sep>=0?key.slice(0,sep):key;
+  const model=sep>=0?key.slice(sep+3):'';
+  const group=records.filter(r=>{
+    const rs=(r.site||'').trim()||'未設定';
+    const rm=(r.model||'').trim()||'未設定';
+    return rs===site&&rm===model;
+  }).sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0);
+  const hdr=document.getElementById('karte-detail-header');
+  const firstType=group.length?typeLabel(group[0].type||'other'):'';
+  const firstRef=group.length?group[0].refrigerant:'';
+  hdr.innerHTML=`<div style="font-size:16px;font-weight:700;color:#333">${site}</div><div class="record-meta" style="margin-top:2px">${firstType} / ${model} / ${firstRef}</div>`;
+  let tbody='';
+  group.forEach(r=>{
+    try{
+      const ratio=(r.hp&&r.lp&&r.lp>0)?(r.hp/r.lp).toFixed(2):'—';
+      const {sh,sc,evapSat,condSat}=getSHSC(r.refrigerant,r.lp,r.ts,r.hp,r.lt!=null?r.lt:null);
+      const condDelta=(condSat!==null&&r.amb!=null&&!isNaN(Number(r.amb)))?(condSat-Number(r.amb)):null;
+      const evapDelta=(evapSat!==null&&r.indoor!=null&&!isNaN(Number(r.indoor)))?(Number(r.indoor)-evapSat):null;
+      const diag=getDiagnosis(r);
+      const ambStr=(r.amb&&!isNaN(Number(r.amb)))?Number(r.amb).toFixed(1):'—';
+      tbody+=`<tr><td class="td-date">${r.date}</td><td>${ratio}</td><td>${sh!==null?sh.toFixed(1):'—'}</td><td>${sc!==null?sc.toFixed(1):'—'}</td><td>${condDelta!==null?condDelta.toFixed(1):'—'}</td><td>${evapDelta!==null?evapDelta.toFixed(1):'—'}</td><td>${ambStr}</td><td><span class="${diag.cls}">${diag.label}</span></td></tr>`;
+    }catch(e){}
+  });
+  document.getElementById('karte-table').innerHTML=`<thead><tr><th>日付</th><th>圧縮比</th><th>SH<br>℃</th><th>SC<br>℃</th><th>凝縮器<br>温度差</th><th>蒸発器<br>温度差</th><th>外気<br>℃</th><th>診断</th></tr></thead><tbody>${tbody}</tbody>`;
+  const notedRecords=group.filter(r=>r.note&&r.note.trim());
+  const notesEl=document.getElementById('karte-notes');
+  if(notedRecords.length){
+    notesEl.innerHTML='<div class="section-title" style="margin-top:12px">メモ・備考</div><div style="margin:0 1rem;border:1px solid #ddd;border-radius:10px;overflow:hidden">'+notedRecords.map(r=>`<div class="karte-note-row"><span style="font-size:10px;color:#999;margin-right:8px">${r.date}</span>${r.note}</div>`).join('')+'</div>';
+  }else{
+    notesEl.innerHTML='';
+  }
+  document.getElementById('karte-list-view').style.display='none';
+  document.getElementById('karte-detail-view').style.display='';
 }
 </script>
 </body>
